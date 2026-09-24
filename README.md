@@ -85,7 +85,6 @@ Customer Signals
 ---
 
 # 🛠️ Tech Stack
-# 🛠️ Tech Stack
 
 <div align="center">
 
