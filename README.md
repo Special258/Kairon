@@ -85,26 +85,43 @@ Customer Signals
 ---
 
 # 🛠️ Tech Stack
+# 🛠️ Tech Stack
 
-### 🎨 Frontend
+<div align="center">
 
-`React` `TypeScript` `Vite` `CSS` `Lucide`
+<table>
+<tr>
+<td align="center">
+<img src="https://skillicons.dev/icons?i=react,ts,vite,css" height="45"/>
+</td>
 
-### 🤖 Machine Learning
+<td align="center">
+<img src="https://skillicons.dev/icons?i=python" height="45"/>
+</td>
 
-`Python` `Pandas` `Scikit-learn` `Joblib`
+<td align="center">
+<img src="https://skillicons.dev/icons?i=fastapi" height="45"/>
+</td>
 
-### ⚙️ Backend
+<td align="center">
+<img src="https://skillicons.dev/icons?i=supabase" height="45"/>
+</td>
 
-`FastAPI` `Pydantic` `REST API`
+<td align="center">
+<img src="https://skillicons.dev/icons?i=git,github,vscode" height="45"/>
+</td>
+</tr>
+</table>
 
-### 🔐 Authentication
+<br/>
 
-`Supabase` `Email/Password` `Google OAuth`
+<img src="https://img.shields.io/badge/Pandas-150458?style=flat-square&logo=pandas&logoColor=white"/>
+<img src="https://img.shields.io/badge/Scikit--Learn-F7931E?style=flat-square&logo=scikit--learn&logoColor=white"/>
+<img src="https://img.shields.io/badge/Joblib-2E7D32?style=flat-square"/>
+<img src="https://img.shields.io/badge/Pydantic-E92063?style=flat-square"/>
+<img src="https://img.shields.io/badge/REST%20API-000000?style=flat-square"/>
 
-### 🧰 Development
-
-`Git` `GitHub` `VS Code`
+</div>
 
 ---
 
