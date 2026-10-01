@@ -6,77 +6,79 @@
 
 <br/>
 
+[![GitHub stars](https://img.shields.io/badge/Release-v1.0.0-blue?style=flat-square)](https://github.com/Special258/Kairon)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.14%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 </div>
 
 # 🧠 About Kairon
 
-**Kairon** is a **Customer Relationship Intelligence and Retention Decision Platform** designed to help customer success, account management, and revenue teams identify **churn risk early**, understand the reasons behind that risk, estimate the **financial exposure**, and choose practical **retention actions**.
+**Kairon** is a **Customer Relationship Intelligence and Retention Decision Platform** designed to help customer success, account management, and revenue teams identify **churn risk early**, understand the reasons behind that risk, estimate the **financial exposure**, and execute prescriptive **retention playbooks**.
 
-Instead of being another passive reporting dashboard, Kairon works as a decision layer between customer data and the next action a team needs to take.
+Instead of being another passive reporting dashboard, Kairon acts as an active decision layer between customer behavioral signals and executive retention strategies.
 
-### 🎯 Core Flow
+### 🎯 Core Retention Flow
 
 ```text
 Customer Signals
        ↓
-🤖 Churn Prediction
+🤖 Churn Prediction (Scikit-Learn ML)
        ↓
-🔍 Risk Drivers
+🔍 Explainable Risk Drivers (Feature Impact)
        ↓
-🚦 Risk Tier
+🚦 Risk Tier (Low / Moderate / High / Critical)
        ↓
-💰 Revenue at Risk
+💰 Revenue at Risk & Estimated CLV
        ↓
-🎯 Retention Action
+🎯 Retention Action Playbooks
        ↓
-🤝 Team Review
+🤝 Collaborative E2EE Team Reviews
 ```
 
-> **See the signal. Keep the relationship.**
+> **"See the signal. Keep the relationship."**
 
 ---
 
 # ✨ Key Features
 
-* 🤖 **Churn Prediction** — Predict customer churn risk using multiple customer signals.
-* 🚦 **Risk Classification** — Categorize accounts into Low, Moderate, High, and Critical risk.
-* 🔍 **Explainable Risk Drivers** — Identify the key factors influencing the prediction.
-* 💰 **Revenue at Risk** — Translate customer risk into financial exposure.
-* 🎯 **Retention Playbook** — Connect risk insights with recommended retention actions.
-* 📊 **Cohort Analysis** — Upload and analyze multiple customer accounts through CSV.
-* 🧪 **What-If Simulation** — Compare baseline and modified customer scenarios.
-* 🤝 **Team Reviews** — Review account context, risk, plans, and team feedback.
+* 🤖 **Predictive Churn Intelligence** — Real-time inference predicting customer churn probability and risk tier.
+* 🚦 **Risk Classification** — Categorize accounts into Low, Moderate, High, and Critical risk tiers.
+* 🔍 **Explainable Risk Drivers** — Local feature impact waterfall explaining top positive and negative churn drivers.
+* 💰 **Financial Exposure Analysis** — Translates churn probability into Annual Revenue at Risk and Estimated Lifetime Value (CLV).
+* 🎯 **Prescriptive Retention Playbooks** — Actionable retention plays with estimated risk reduction percentages.
+* 🧪 **What-If Sensitivity Sandbox** — Compare baseline vs simulated interventions (+1-Year contract lock-in, dedicated tech support, feature adoption boosts).
+* 📊 **Cohort & Batch CSV Scoring** — Drag-and-drop batch CSV scoring with distribution metrics and exportable risk reports.
+* 🔒 **Zero-Knowledge E2EE Reviews** — Team notes encrypted in the browser with client-side AES-256-GCM before database storage.
+* 🛡️ **Enterprise Security** — Built-in sliding-window rate limiting, input sanitization, OWASP Top 10 security transport headers, and CSRF protection.
 
 ---
 
 # 🏗️ Architecture
 
 ```text
-             👤 USER
-                │
-                ▼
-      ┌──────────────────┐
-      │ React + TypeScript│
-      │     Frontend      │
-      └────────┬─────────┘
-               │ REST API
-               ▼
-      ┌──────────────────┐
-      │     FastAPI      │
-      │      Backend     │
-      └────────┬─────────┘
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-   📊 Data        🤖 ML Model
-   Processing     Scikit-learn
-        │             │
-        └──────┬──────┘
-               ▼
-        🎯 Risk Analysis
-               │
-               ▼
-        💰 Retention Insights
+             👤 User / Browser
+                     │
+                     ▼
+      ┌──────────────────────────────┐
+      │   React 19 + TypeScript SPA  │
+      │  (Vite, Tailwind, WebCrypto) │
+      └──────────────┬───────────────┘
+                     │ HTTP / REST / Bearer Token
+                     ▼
+      ┌──────────────────────────────┐
+      │     FastAPI Python Backend   │
+      │  (Uvicorn, Pydantic, OWASP)  │
+      └──────┬───────────────┬───────┘
+             │               │
+      ┌──────▼──────┐ ┌──────▼──────┐
+      │  ML Pipeline│ │ SQLite / DB │
+      │ Scikit-Learn│ │ Encrypted   │
+      │   Models    │ │ Persistence │
+      └─────────────┘ └─────────────┘
 ```
 
 ---
@@ -88,23 +90,28 @@ Customer Signals
 <table>
 <tr>
 <td align="center">
-<img src="https://skillicons.dev/icons?i=react,ts,vite,css" height="45"/>
+<img src="https://skillicons.dev/icons?i=react,ts,vite,tailwind,css" height="45"/><br/>
+<b>Frontend</b>
 </td>
 
 <td align="center">
-<img src="https://skillicons.dev/icons?i=python" height="45"/>
+<img src="https://skillicons.dev/icons?i=python" height="45"/><br/>
+<b>Python 3.14</b>
 </td>
 
 <td align="center">
-<img src="https://skillicons.dev/icons?i=fastapi" height="45"/>
+<img src="https://skillicons.dev/icons?i=fastapi" height="45"/><br/>
+<b>FastAPI</b>
 </td>
 
 <td align="center">
-<img src="https://skillicons.dev/icons?i=supabase" height="45"/>
+<img src="https://skillicons.dev/icons?i=sqlite,supabase" height="45"/><br/>
+<b>Database</b>
 </td>
 
 <td align="center">
-<img src="https://skillicons.dev/icons?i=git,github,vscode" height="45"/>
+<img src="https://skillicons.dev/icons?i=docker,git,github" height="45"/><br/>
+<b>DevOps</b>
 </td>
 </tr>
 </table>
@@ -115,52 +122,89 @@ Customer Signals
 <img src="https://img.shields.io/badge/Scikit--Learn-F7931E?style=flat-square&logo=scikit--learn&logoColor=white"/>
 <img src="https://img.shields.io/badge/Joblib-2E7D32?style=flat-square"/>
 <img src="https://img.shields.io/badge/Pydantic-E92063?style=flat-square"/>
-<img src="https://img.shields.io/badge/REST%20API-000000?style=flat-square"/>
+<img src="https://img.shields.io/badge/Web%20Crypto%20API-AES--256--GCM-blueviolet?style=flat-square"/>
 
 </div>
 
 ---
 
-# 🔌 API
+# ⚡ Quick Start
 
-| Method | Endpoint               | Purpose                            |
-| ------ | ---------------------- | ---------------------------------- |
-| GET    | `/api/health`          | Service & model status             |
-| GET    | `/api/model/metrics`   | Model metrics & feature importance |
-| GET    | `/api/dataset/summary` | Dataset summary                    |
-| POST   | `/api/predict`         | Single account prediction          |
-| POST   | `/api/simulate`        | What-if simulation                 |
-| POST   | `/api/predict/batch`   | Batch account prediction           |
-| POST   | `/api/model/retrain`   | Model retraining                   |
+### Prerequisites
+- **Node.js** 18+ & **npm**
+- **Python** 3.10+
+
+### Option A: Unified Production Server (Single Command)
+Run both backend and frontend seamlessly on `http://127.0.0.1:8000`:
+
+```bash
+# 1. Install dependencies
+npm run build
+
+# 2. Start unified server
+npm run prod
+```
+Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
+
+---
+
+### Option B: Full-Stack Development Mode (Hot Reload)
+Run frontend with Vite hot-reloading on port 5173 and backend on port 8000:
+
+```bash
+npm run dev
+```
+
+---
+
+# 🔌 API Reference
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/status` | Service health and model status check |
+| `GET` | `/api/model/metrics` | Model evaluation benchmarks, confusion matrix, ROC-AUC |
+| `GET` | `/api/dataset/summary` | Synthetic customer dataset distribution & feature statistics |
+| `POST` | `/api/predict` | Single customer account risk scoring & feature impact |
+| `POST` | `/api/simulate` | What-If intervention sensitivity analysis |
+| `POST` | `/api/predict/batch` | Batch CSV cohort risk scoring and portfolio metrics |
+| `POST` | `/api/assistant/resolve` | AI Copilot real-world troubleshooting and customer guidance |
+| `GET` / `POST` | `/api/accounts` | Persistent account storage and retrieval |
+| `GET` / `POST` | `/api/reviews/{id}/notes` | End-to-end encrypted account review notes |
+| `GET` / `POST` | `/api/workspace` | Workspace settings and team metadata |
+
+Interactive Swagger documentation is available at **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**.
 
 ---
 
 # 📊 Customer Signals
 
-Kairon uses customer signals such as:
+Kairon evaluates multiple behavioral and commercial signals:
 
-`MRR` • `Tenure` • `Contract Type` • `Payment Method` • `Feature Adoption` • `Usage Trend` • `Support Tickets` • `NPS` • `Late Payments` • `Technical Support`
-
----
-
-# 🚀 Current Status
-
-🚧 **Kairon is currently under active development.**
-
-The core prediction, batch scoring, simulation, model metrics, and retraining capabilities are implemented through the FastAPI service.
+`Monthly Charges (MRR)` • `Tenure (Months)` • `Contract Type` • `Payment Method` • `Feature Adoption Index` • `Usage Velocity Trend` • `Support Tickets (90d)` • `Net Promoter Score (NPS)` • `Late Payment Frequency` • `Dedicated Tech Support Tier`
 
 ---
 
-# 👨‍💻 Developer
+# 🧪 Automated Testing
+
+Kairon includes a comprehensive automated test suite covering API endpoints, prediction pipeline, what-if simulations, rate limiting, and input sanitization:
+
+```bash
+npm test
+```
+All 20 pytest test suites run against the backend application with 100% pass rate.
+
+---
+
+# 👨‍💻 Author & Developer
 
 **Jal Patel**
 
-🎓 B.Tech Computer Science Engineering
-🤖 Artificial Intelligence & Data Science
-🏫 Parul University
+🎓 B.Tech Computer Science Engineering  
+🤖 Artificial Intelligence & Data Science  
+🏫 Parul University  
 
-[![GitHub](https://img.shields.io/badge/GitHub-Special258-181717?style=for-the-badge\&logo=github)](https://github.com/Special258)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Jal%20Patel-0A66C2?style=for-the-badge\&logo=linkedin)](https://www.linkedin.com/in/jalpatel-dataai)
+[![GitHub](https://img.shields.io/badge/GitHub-Special258-181717?style=for-the-badge&logo=github)](https://github.com/Special258)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Jal%20Patel-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/jalpatel-dataai)
 
 ---
 

@@ -1,0 +1,292 @@
+{
+  "model_name": "Logistic Regression",
+  "version": "1.0.0",
+  "roc_auc": 0.984,
+  "accuracy": 0.9357,
+  "precision": 0.9363,
+  "recall": 0.8902,
+  "f1_score": 0.9126,
+  "confusion_matrix": {
+    "true_negatives": 420,
+    "false_positives": 16,
+    "false_negatives": 29,
+    "true_positives": 235
+  },
+  "roc_curve": [
+    {
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "fpr": 0.0,
+      "tpr": 0.405
+    },
+    {
+      "fpr": 0.002,
+      "tpr": 0.689
+    },
+    {
+      "fpr": 0.007,
+      "tpr": 0.697
+    },
+    {
+      "fpr": 0.011,
+      "tpr": 0.723
+    },
+    {
+      "fpr": 0.014,
+      "tpr": 0.727
+    },
+    {
+      "fpr": 0.016,
+      "tpr": 0.731
+    },
+    {
+      "fpr": 0.018,
+      "tpr": 0.746
+    },
+    {
+      "fpr": 0.023,
+      "tpr": 0.848
+    },
+    {
+      "fpr": 0.025,
+      "tpr": 0.864
+    },
+    {
+      "fpr": 0.03,
+      "tpr": 0.867
+    },
+    {
+      "fpr": 0.032,
+      "tpr": 0.871
+    },
+    {
+      "fpr": 0.037,
+      "tpr": 0.875
+    },
+    {
+      "fpr": 0.041,
+      "tpr": 0.894
+    },
+    {
+      "fpr": 0.044,
+      "tpr": 0.898
+    },
+    {
+      "fpr": 0.048,
+      "tpr": 0.902
+    },
+    {
+      "fpr": 0.055,
+      "tpr": 0.905
+    },
+    {
+      "fpr": 0.069,
+      "tpr": 0.917
+    },
+    {
+      "fpr": 0.073,
+      "tpr": 0.924
+    },
+    {
+      "fpr": 0.076,
+      "tpr": 0.932
+    },
+    {
+      "fpr": 0.085,
+      "tpr": 0.955
+    },
+    {
+      "fpr": 0.087,
+      "tpr": 0.958
+    },
+    {
+      "fpr": 0.101,
+      "tpr": 0.962
+    },
+    {
+      "fpr": 0.122,
+      "tpr": 0.97
+    },
+    {
+      "fpr": 0.14,
+      "tpr": 0.973
+    },
+    {
+      "fpr": 0.167,
+      "tpr": 0.977
+    },
+    {
+      "fpr": 0.174,
+      "tpr": 0.989
+    },
+    {
+      "fpr": 0.193,
+      "tpr": 0.992
+    },
+    {
+      "fpr": 0.202,
+      "tpr": 0.996
+    },
+    {
+      "fpr": 1.0,
+      "tpr": 1.0
+    }
+  ],
+  "feature_importances": [
+    {
+      "feature": "contract_type_Month-to-Month",
+      "display_name": "Contract: Month-to-Month",
+      "importance": 3.775,
+      "importance_pct": 377.5
+    },
+    {
+      "feature": "contract_type_Two-Year",
+      "display_name": "Contract: 2 Year Term",
+      "importance": 3.0623,
+      "importance_pct": 306.23
+    },
+    {
+      "feature": "support_tickets_90d",
+      "display_name": "Support Tickets (90d)",
+      "importance": 2.7541,
+      "importance_pct": 275.41
+    },
+    {
+      "feature": "tenure_months",
+      "display_name": "Contract Tenure (Months)",
+      "importance": 2.591,
+      "importance_pct": 259.1
+    },
+    {
+      "feature": "nps_score",
+      "display_name": "Net Promoter Score (NPS)",
+      "importance": 2.5477,
+      "importance_pct": 254.77
+    },
+    {
+      "feature": "usage_trend_pct",
+      "display_name": "Usage Velocity Trend",
+      "importance": 1.9867,
+      "importance_pct": 198.67
+    },
+    {
+      "feature": "feature_adoption_rate",
+      "display_name": "Feature Adoption Rate",
+      "importance": 1.7333,
+      "importance_pct": 173.33
+    },
+    {
+      "feature": "payment_method_Electronic Check",
+      "display_name": "Payment: Electronic Check",
+      "importance": 1.3604,
+      "importance_pct": 136.04
+    },
+    {
+      "feature": "payment_method_Bank Transfer",
+      "display_name": "Payment: Bank Transfer",
+      "importance": 1.1237,
+      "importance_pct": 112.37
+    },
+    {
+      "feature": "late_payments_count",
+      "display_name": "Late Invoices Count",
+      "importance": 1.0129,
+      "importance_pct": 101.29
+    },
+    {
+      "feature": "has_tech_support_True",
+      "display_name": "Tech Support: Enrolled",
+      "importance": 0.7838,
+      "importance_pct": 78.38
+    },
+    {
+      "feature": "has_tech_support_False",
+      "display_name": "Tech Support: None",
+      "importance": 0.7823,
+      "importance_pct": 78.23
+    },
+    {
+      "feature": "monthly_charges",
+      "display_name": "Monthly Charges (MRR)",
+      "importance": 0.7374,
+      "importance_pct": 73.74
+    },
+    {
+      "feature": "contract_type_One-Year",
+      "display_name": "Contract: 1 Year Term",
+      "importance": 0.7142,
+      "importance_pct": 71.42
+    },
+    {
+      "feature": "payment_method_Credit Card",
+      "display_name": "Payment: Credit Card",
+      "importance": 0.1498,
+      "importance_pct": 14.98
+    },
+    {
+      "feature": "payment_method_Manual Invoice",
+      "display_name": "Payment: Manual Invoice",
+      "importance": 0.0884,
+      "importance_pct": 8.84
+    }
+  ],
+  "feature_names": [
+    "tenure_months",
+    "monthly_charges",
+    "feature_adoption_rate",
+    "support_tickets_90d",
+    "late_payments_count",
+    "usage_trend_pct",
+    "nps_score",
+    "contract_type_Month-to-Month",
+    "contract_type_One-Year",
+    "contract_type_Two-Year",
+    "payment_method_Bank Transfer",
+    "payment_method_Credit Card",
+    "payment_method_Electronic Check",
+    "payment_method_Manual Invoice",
+    "has_tech_support_False",
+    "has_tech_support_True"
+  ],
+  "numerical_features": [
+    "tenure_months",
+    "monthly_charges",
+    "feature_adoption_rate",
+    "support_tickets_90d",
+    "late_payments_count",
+    "usage_trend_pct",
+    "nps_score"
+  ],
+  "categorical_features": [
+    "contract_type",
+    "payment_method",
+    "has_tech_support"
+  ],
+  "all_model_evaluations": {
+    "Gradient Boosting Classifier": {
+      "roc_auc": 0.9779,
+      "accuracy": 0.9129,
+      "precision": 0.9076,
+      "recall": 0.8561,
+      "f1_score": 0.8811
+    },
+    "Random Forest Classifier": {
+      "roc_auc": 0.9739,
+      "accuracy": 0.9143,
+      "precision": 0.9113,
+      "recall": 0.8561,
+      "f1_score": 0.8828
+    },
+    "Logistic Regression": {
+      "roc_auc": 0.984,
+      "accuracy": 0.9357,
+      "precision": 0.9363,
+      "recall": 0.8902,
+      "f1_score": 0.9126
+    }
+  },
+  "total_training_samples": 2800,
+  "test_samples": 700
+}

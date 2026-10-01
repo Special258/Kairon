@@ -1,0 +1,30 @@
+{
+  "name": "kairon",
+  "version": "1.0.0",
+  "description": "Kairon Customer Relationship Intelligence Platform",
+  "private": true,
+  "scripts": {
+    "server": "node start.js",
+    "dev": "node start.js",
+    "start": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "prod": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "serve": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "preview": "npm --prefix frontend run preview",
+    "backend": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload",
+    "frontend": "npm --prefix frontend run dev",
+    "client": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "python -m pytest -o pythonpath=backend backend/tests",
+    "test:backend": "python -m pytest -o pythonpath=backend backend/tests"
+  },
+  "keywords": [
+    "customer-intelligence",
+    "churn-prediction",
+    "machine-learning",
+    "fastapi",
+    "react",
+    "vite"
+  ],
+  "author": "Kairon Team",
+  "license": "MIT"
+}
