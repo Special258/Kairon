@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Sparkles, X, AlertTriangle, Check, Copy, ArrowRight, ShieldCheck,
   Send, RefreshCw, ChevronRight, SlidersHorizontal, LockKeyhole, Mail,
-  TrendingDown, FileText, Zap, HeartHandshake, UserX, Clock, DollarSign
+  TrendingDown, FileText, Zap, HeartHandshake, UserX, Clock, DollarSign,
+  RotateCcw, Info
 } from 'lucide-react';
 import { resolveCustomerProblem } from '../services/api';
 import { e2ee } from '../services/e2ee';
-import { addReviewNote } from '../services/userData';
+import { addReviewNote, type ScoredAccountRecord } from '../services/userData';
 import type { CustomerProfile, AIAssistantResolution } from '../types';
 
 interface AIAssistantDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   currentProfile: CustomerProfile;
+  workspaceAccounts?: ScoredAccountRecord[];
+  onSelectAccount?: (profile: CustomerProfile) => void;
   onNavigateToWhatIf?: (simulatedProfile: CustomerProfile) => void;
   onRefreshReviewNotes?: () => void;
 }
@@ -59,10 +62,12 @@ export function AIAssistantDrawer({
   isOpen,
   onClose,
   currentProfile,
+  workspaceAccounts = [],
+  onSelectAccount,
   onNavigateToWhatIf,
   onRefreshReviewNotes
 }: AIAssistantDrawerProps) {
-  const [selectedIssue, setSelectedIssue] = useState<string>('champion_left');
+  const [selectedIssue, setSelectedIssue] = useState<string | null>(null);
   const [customQuery, setCustomQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [resolution, setResolution] = useState<AIAssistantResolution | null>(null);
@@ -71,11 +76,8 @@ export function AIAssistantDrawer({
   const [e2eeLogged, setE2eeLogged] = useState<boolean>(false);
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    if (isOpen && !resolution) {
-      void runDiagnosis('champion_left', '');
-    }
-  }, [isOpen]);
+  // Real-world alert detection from the user's actual workspace accounts
+  const highRiskAccounts = workspaceAccounts.filter(a => a.risk_tier === 'High' || a.risk_tier === 'Critical');
 
   async function runDiagnosis(issueType: string, query: string) {
     setLoading(true);
@@ -108,6 +110,14 @@ export function AIAssistantDrawer({
     void runDiagnosis('custom', customQuery);
   }
 
+  function handleReset() {
+    setResolution(null);
+    setSelectedIssue(null);
+    setCustomQuery('');
+    setCopiedDraft(false);
+    setE2eeLogged(false);
+  }
+
   async function handleCopyDraft() {
     if (!resolution?.executive_outreach_draft) return;
     const { subject, body } = resolution.executive_outreach_draft;
@@ -133,10 +143,12 @@ export function AIAssistantDrawer({
     if (!resolution) return;
     setLoggingE2EE(true);
     try {
-      const summaryNote = `[AI Diagnostic Resolution] ${resolution.problem_title}\nSeverity: ${resolution.severity}\nAction Plan: ${resolution.step_by_step_playbook.join(' | ')}`;
+      const accountId = currentProfile.customer_id || 'ACCOUNT';
+      const encryptedNote = `[AI Resolution: ${resolution.problem_title}]\n\nSummary: ${resolution.diagnosis_summary}\n\nInterventions:\n${resolution.recommended_interventions.map(i => `• ${i.title} (${i.impact})`).join('\n')}\n\nAction Plan:\n${(resolution.step_by_step_playbook || []).map((s: string, idx: number) => `${idx + 1}. ${s}`).join('\n')}`;
+      
       await addReviewNote(
-        currentProfile.customer_id || 'ACC-01',
-        summaryNote
+        accountId,
+        encryptedNote
       );
       setE2eeLogged(true);
       if (onRefreshReviewNotes) onRefreshReviewNotes();
@@ -164,10 +176,10 @@ export function AIAssistantDrawer({
             </div>
             <div>
               <div className="ai-title-wrap">
-                <h3>Kairon AI Resolution Engine</h3>
-                <span className="ai-badge-live">Real-World Copilot</span>
+                <h3>Kairon Retention Copilot</h3>
+                <span className="ai-badge-live">On-Demand Guidance</span>
               </div>
-              <p>Prescriptive solutions for customer relationship friction & churn risks</p>
+              <p>Practical interventions for real-world customer relationship friction</p>
             </div>
           </div>
           <button className="icon-button" onClick={onClose} title="Close AI Assistant">
@@ -175,11 +187,66 @@ export function AIAssistantDrawer({
           </button>
         </div>
 
-        {/* Account Context Badge */}
+        {/* Real-World Workspace Alerts Banner */}
+        <div className="ai-alerts-status-bar">
+          {highRiskAccounts.length > 0 ? (
+            <div className="ai-real-alert">
+              <AlertTriangle size={15} color="#d76d3c" />
+              <span>
+                <b>{highRiskAccounts.length} account{highRiskAccounts.length > 1 ? 's' : ''}</b> flagged at high/critical risk in your workspace:
+              </span>
+              <div className="ai-risk-chips">
+                {highRiskAccounts.slice(0, 3).map(acc => (
+                  <button
+                    key={acc.id}
+                    className="ai-risk-chip"
+                    onClick={() => {
+                      if (onSelectAccount) onSelectAccount(acc.profile);
+                      setSelectedIssue(null);
+                      setResolution(null);
+                    }}
+                  >
+                    {acc.company_name} ({acc.risk_tier})
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="ai-clean-alert">
+              <Check size={14} color="var(--teal)" />
+              <span>All accounts in your workspace are within normal health thresholds.</span>
+            </div>
+          )}
+        </div>
+
+        {/* Account Context Selection */}
         <div className="ai-context-strip">
           <div className="ai-context-account">
             <span className="ai-context-dot" />
-            <b>{currentProfile.company_name || 'Active Account Signals'}</b>
+            {workspaceAccounts.length > 0 ? (
+              <select
+                className="ai-account-dropdown"
+                value={currentProfile.customer_id || 'active'}
+                onChange={(e) => {
+                  const target = workspaceAccounts.find(a => a.id === e.target.value);
+                  if (target && onSelectAccount) {
+                    onSelectAccount(target.profile);
+                    setResolution(null);
+                  }
+                }}
+              >
+                <option value="active">
+                  {currentProfile.company_name || 'Active Account Inputs'}
+                </option>
+                {workspaceAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.company_name} (${acc.monthly_charges}/mo • {acc.risk_tier})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <b>{currentProfile.company_name || 'Active Customer Inputs'}</b>
+            )}
             <small>{currentProfile.customer_id ? `(${currentProfile.customer_id})` : ''}</small>
           </div>
           <div className="ai-context-stats">
@@ -195,7 +262,7 @@ export function AIAssistantDrawer({
 
         {/* Preset Difficulty Pills */}
         <div className="ai-presets-section">
-          <span className="eyebrow">Diagnose Common Difficulties</span>
+          <span className="eyebrow">Select a Specific Relationship Challenge</span>
           <div className="ai-preset-grid">
             {PRESET_ISSUES.map(issue => {
               const Icon = issue.icon;
@@ -223,7 +290,7 @@ export function AIAssistantDrawer({
         {/* Custom Problem Input */}
         <form className="ai-custom-input-wrap" onSubmit={handleCustomSubmit}>
           <input
-            placeholder="Or describe a specific customer blocker (e.g. champion left, budget cuts)..."
+            placeholder="Or describe a specific customer situation (e.g. competitor offer, budget cut)..."
             value={customQuery}
             onChange={e => setCustomQuery(e.target.value)}
           />
@@ -237,11 +304,21 @@ export function AIAssistantDrawer({
           {loading ? (
             <div className="ai-loading-state">
               <span className="spinner" />
-              <b>Analyzing signals & formulating prescriptive resolution...</b>
-              <p>Evaluating churn drivers, revenue exposure, and optimal retention levers.</p>
+              <b>Analyzing customer signals & formulating resolution...</b>
+              <p>Evaluating real-world retention levers, financial exposure, and outreach strategy.</p>
             </div>
           ) : resolution ? (
             <div className="ai-resolution-pane">
+              {/* Reset Bar */}
+              <div className="ai-pane-top-actions">
+                <span className="ai-resolution-badge">
+                  <Check size={13} /> Resolution Plan Ready
+                </span>
+                <button className="text-button compact-btn" onClick={handleReset}>
+                  <RotateCcw size={13} /> Ask Another Question
+                </button>
+              </div>
+
               {/* Problem Diagnosis Card */}
               <div className="ai-diagnosis-card" style={{ borderColor: `${resolution.severity_color}40` }}>
                 <div className="ai-diag-head">
@@ -260,7 +337,7 @@ export function AIAssistantDrawer({
 
                 {/* Root Causes List */}
                 <div className="ai-root-causes">
-                  <b>Identified Root Causes:</b>
+                  <b>Identified Drivers:</b>
                   <ul>
                     {resolution.root_causes.map((cause, idx) => (
                       <li key={idx}>
@@ -292,95 +369,79 @@ export function AIAssistantDrawer({
                 </div>
               </div>
 
-              {/* 1-Click Sandbox Execution Banner */}
-              {resolution.suggested_whatif_simulated && (
-                <div className="ai-execute-banner">
-                  <div className="ai-banner-copy">
-                    <div className="ai-banner-icon"><SlidersHorizontal size={18} /></div>
-                    <div>
-                      <b>Simulate Solution in Decision Sandbox</b>
-                      <p>Pre-configure optimal contract & technical levers to project saved revenue</p>
-                    </div>
-                  </div>
-                  <button className="primary-button ai-action-btn" onClick={handleApplyWhatIf}>
-                    Apply to What-If Sandbox <ArrowRight size={14} />
-                  </button>
-                </div>
-              )}
-
-              {/* Executive Communication Draft */}
-              {resolution.executive_outreach_draft && (
-                <div className="ai-section">
+              {/* Executive Outreach Draft */}
+              <div className="ai-section">
+                <div className="ai-section-title-between">
                   <div className="ai-section-title">
                     <Mail size={15} />
-                    <h5>Ready-to-Send Executive Communication</h5>
+                    <h5>Ready-to-Send Executive Outreach</h5>
                   </div>
-                  <div className="ai-draft-card">
-                    <div className="ai-draft-head">
-                      <div>
-                        <span className="ai-draft-to">To: {resolution.executive_outreach_draft.recipient}</span>
-                        <b className="ai-draft-subject">{resolution.executive_outreach_draft.subject}</b>
-                      </div>
-                      <button className="secondary-button ai-copy-btn" onClick={handleCopyDraft}>
-                        {copiedDraft ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Draft</>}
-                      </button>
-                    </div>
-                    <pre className="ai-draft-body">{resolution.executive_outreach_draft.body}</pre>
+                  <button className="secondary-button compact-btn" onClick={handleCopyDraft}>
+                    {copiedDraft ? <Check size={13} /> : <Copy size={13} />}
+                    {copiedDraft ? 'Copied to Clipboard' : 'Copy Email Draft'}
+                  </button>
+                </div>
+                <div className="ai-email-box">
+                  <div className="ai-email-meta">
+                    <div><span>To:</span> {resolution.executive_outreach_draft.recipient}</div>
+                    <div><span>Subject:</span> {resolution.executive_outreach_draft.subject}</div>
                   </div>
-                </div>
-              )}
-
-              {/* Step-by-Step Resolution Roadmap */}
-              <div className="ai-section">
-                <div className="ai-section-title">
-                  <FileText size={15} />
-                  <h5>Team Resolution Roadmap</h5>
-                </div>
-                <div className="ai-playbook-steps">
-                  {resolution.step_by_step_playbook.map((step, idx) => {
-                    const isChecked = checkedSteps[idx] || false;
-                    return (
-                      <div
-                        key={idx}
-                        className={`ai-step-row ${isChecked ? 'completed' : ''}`}
-                        onClick={() => toggleStep(idx)}
-                      >
-                        <div className={`ai-step-check ${isChecked ? 'checked' : ''}`}>
-                          {isChecked ? <Check size={12} /> : <span>0{idx + 1}</span>}
-                        </div>
-                        <span className="ai-step-text">{step}</span>
-                      </div>
-                    );
-                  })}
+                  <pre className="ai-email-body">{resolution.executive_outreach_draft.body}</pre>
                 </div>
               </div>
 
-              {/* E2EE Audit Logging Action */}
-              <div className="ai-e2ee-log-strip">
-                <div className="ai-e2ee-copy">
-                  <LockKeyhole size={15} />
-                  <span>Log this diagnostic & action plan directly to client-side encrypted notes</span>
+              {/* Step-by-Step Action Checklist */}
+              <div className="ai-section">
+                <div className="ai-section-title">
+                  <FileText size={15} />
+                  <h5>Actionable Execution Checklist</h5>
                 </div>
+                <div className="ai-checklist">
+                  {(resolution.step_by_step_playbook || []).map((step: string, idx: number) => (
+                    <label key={idx} className={`ai-check-item ${checkedSteps[idx] ? 'checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(checkedSteps[idx])}
+                        onChange={() => toggleStep(idx)}
+                      />
+                      <span>{step}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom Quick-Action Buttons */}
+              <div className="ai-bottom-actions">
                 <button
-                  className="secondary-button ai-e2ee-btn"
+                  className="secondary-button ai-action-btn"
+                  onClick={handleApplyWhatIf}
+                  title="Test this intervention in What-If Simulator"
+                >
+                  <SlidersHorizontal size={15} />
+                  <span>Test in What-If Sandbox</span>
+                  <ArrowRight size={14} />
+                </button>
+                <button
+                  className={`primary-button ai-action-btn ${e2eeLogged ? 'logged' : ''}`}
                   onClick={handleLogToE2EE}
                   disabled={loggingE2EE || e2eeLogged}
+                  title="Encrypt resolution and log to customer review notes"
                 >
-                  {e2eeLogged ? (
-                    <><Check size={14} /> Logged to E2EE Stream</>
-                  ) : loggingE2EE ? (
-                    'Encrypting...'
-                  ) : (
-                    <><ShieldCheck size={14} /> Encrypt & Save to Context</>
-                  )}
+                  <LockKeyhole size={15} />
+                  <span>{loggingE2EE ? 'Encrypting...' : e2eeLogged ? 'Logged to E2EE Notes' : 'Save Encrypted Plan'}</span>
+                  {e2eeLogged && <Check size={14} />}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="ai-empty-prompt">
-              <Sparkles size={32} />
-              <h4>Select a difficulty above to generate a prescriptive solution</h4>
-              <p>The AI Resolution Engine calculates root causes, financial exposure, What-If simulation parameters, and personalized outreach.</p>
+            <div className="ai-empty-prompt-state">
+              <div className="ai-empty-icon-wrap">
+                <Sparkles size={28} color="var(--teal)" />
+              </div>
+              <h4>On-Demand Relationship Troubleshooting</h4>
+              <p>
+                Kairon Copilot is designed for real-world customer difficulties. Select a challenge above (like champion loss or pricing objections) or describe your customer's situation to generate a custom retention playbook and executive outreach draft.
+              </p>
             </div>
           )}
         </div>

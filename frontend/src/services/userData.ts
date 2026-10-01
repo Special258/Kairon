@@ -146,8 +146,7 @@ export function loadReviewAccounts(userName?: string): WorkspaceReviewAccount[] 
     const raw = localStorage.getItem(LOCAL_REVIEW_ACCOUNTS_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  // Default to benchmark accounts if none created yet
-  return BENCHMARK_REVIEW_ACCOUNTS.map(a => a.owner === 'Success Team' && userName ? { ...a, owner: userName } : a);
+  return [];
 }
 
 export function saveReviewAccount(acc: WorkspaceReviewAccount): WorkspaceReviewAccount[] {
@@ -161,6 +160,18 @@ export function saveReviewAccount(acc: WorkspaceReviewAccount): WorkspaceReviewA
     return [acc];
   }
 }
+
+export function deleteReviewAccount(id: string): WorkspaceReviewAccount[] {
+  try {
+    const existing = loadReviewAccounts();
+    const updated = existing.filter(a => a.id.toLowerCase() !== id.toLowerCase());
+    localStorage.setItem(LOCAL_REVIEW_ACCOUNTS_KEY, JSON.stringify(updated));
+    return updated;
+  } catch {
+    return [];
+  }
+}
+
 
 const DEFAULT_PROFILE: UserProfileData = {
   id: 'workspace-user-001',

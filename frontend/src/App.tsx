@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import {
-  Activity, ArrowRight, BarChart3, Bell, Check, CircleHelp, Clock3,
-  Download, Eye, EyeOff, FileSpreadsheet, FlaskConical, Gauge, HeartHandshake,
+  Activity, AlertTriangle, ArrowRight, BarChart3, Bell, Check, CircleHelp, Clock3,
+  DollarSign, Download, Eye, EyeOff, FileSpreadsheet, FlaskConical, Gauge, HeartHandshake,
   Key, LayoutDashboard, LifeBuoy, LockKeyhole, LockKeyholeOpen, LogOut, Menu, MessageSquare,
-  MoreHorizontal, PanelLeft, Pencil, Plus, Search, Send, Settings, Shield,
+  MoreHorizontal, PanelLeft, Pencil, Plus, RotateCcw, Search, Send, Settings, Shield,
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
   UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { e2ee } from './services/e2ee';
 import {
   loadReviewNotes, addReviewNote, type ReviewNoteData,
   loadWorkspaceAccounts, saveWorkspaceAccount, clearWorkspaceAccounts,
-  loadReviewAccounts, saveReviewAccount, inferWorkspaceName,
+  loadReviewAccounts, saveReviewAccount, deleteReviewAccount, inferWorkspaceName,
   getStoredWorkspaceName, setStoredWorkspaceName,
   type ScoredAccountRecord, type WorkspaceReviewAccount
 } from './services/userData';
@@ -317,7 +317,8 @@ function Sidebar({
   setCollapsed,
   onSignOut,
   currentUser,
-  onOpenTour
+  onOpenTour,
+  reviewsCount = 0
 }: {
   page: Page;
   setPage: (page: Page) => void;
@@ -326,6 +327,7 @@ function Sidebar({
   onSignOut: () => void;
   currentUser: UserIdentity;
   onOpenTour: () => void;
+  reviewsCount?: number;
 }) {
   return (
     <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -352,7 +354,7 @@ function Sidebar({
               <button key={item.id} className={`side-nav-item ${page === item.id ? 'active' : ''}`} onClick={() => setPage(item.id)}>
                 <Icon size={18} />
                 <span>{item.label}</span>
-                {item.id === 'reviews' && <b className="nav-count">3</b>}
+                {item.id === 'reviews' && reviewsCount > 0 && <b className="nav-count">{reviewsCount}</b>}
               </button>
             );
           })}
@@ -1011,42 +1013,180 @@ function Scorer({
   );
 }
 
-function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; initialSimulated?: CustomerProfile }) {
+function WhatIf({
+  baseline,
+  initialSimulated,
+  workspaceAccounts = [],
+  onSelectBaseline
+}: {
+  baseline: CustomerProfile;
+  initialSimulated?: CustomerProfile;
+  workspaceAccounts?: ScoredAccountRecord[];
+  onSelectBaseline?: (profile: CustomerProfile) => void;
+}) {
+  const [activeBaseline, setActiveBaseline] = useState<CustomerProfile>(baseline);
   const [simulated, setSimulated] = useState<CustomerProfile>(initialSimulated ? { ...initialSimulated } : { ...baseline });
   const [result, setResult] = useState<WhatIfSimulationResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const set = (key: keyof CustomerProfile, value: CustomerProfile[keyof CustomerProfile]) => setSimulated({ ...simulated, [key]: value });
+  const [selectedAccId, setSelectedAccId] = useState<string>('');
+  const [manualAccountName, setManualAccountName] = useState(baseline.company_name || '');
+  const [manualMrr, setManualMrr] = useState(baseline.monthly_charges || 1200);
+
+  useEffect(() => {
+    setActiveBaseline(baseline);
+    setManualAccountName(baseline.company_name || '');
+    setManualMrr(baseline.monthly_charges || 1200);
+    if (!initialSimulated) {
+      setSimulated({ ...baseline });
+    }
+  }, [baseline]);
 
   useEffect(() => {
     if (initialSimulated) {
       setSimulated({ ...initialSimulated });
-      void simulateWhatIf(baseline, initialSimulated).then(setResult).catch(() => undefined);
+      void simulateWhatIf(activeBaseline, initialSimulated).then(setResult).catch(() => undefined);
     }
-  }, [initialSimulated, baseline]);
+  }, [initialSimulated]);
+
+  const setSim = (key: keyof CustomerProfile, value: CustomerProfile[keyof CustomerProfile]) =>
+    setSimulated(prev => ({ ...prev, [key]: value }));
+
+  function handleSelectWorkspaceAccount(accId: string) {
+    setSelectedAccId(accId);
+    const found = workspaceAccounts.find(a => a.customer_id === accId || a.id === accId);
+    if (found) {
+      const newBase: CustomerProfile = found.profile ? { ...found.profile } : {
+        ...baseline,
+        company_name: found.company_name,
+        customer_id: found.customer_id,
+        monthly_charges: found.monthly_charges
+      };
+      setActiveBaseline(newBase);
+      setSimulated({ ...newBase });
+      setManualAccountName(newBase.company_name || '');
+      setManualMrr(newBase.monthly_charges);
+      onSelectBaseline?.(newBase);
+      setResult(null);
+    }
+  }
+
+  function handleManualBaselineChange(name: string, mrr: number) {
+    setManualAccountName(name);
+    setManualMrr(mrr);
+    const updated: CustomerProfile = {
+      ...activeBaseline,
+      company_name: name,
+      monthly_charges: mrr
+    };
+    setActiveBaseline(updated);
+    setSimulated(prev => ({ ...prev, company_name: name, monthly_charges: mrr }));
+  }
 
   async function runSimulation() {
     setLoading(true);
-    try { setResult(await simulateWhatIf(baseline, simulated)); } finally { setLoading(false); }
+    try {
+      const currentBase = {
+        ...activeBaseline,
+        company_name: manualAccountName || activeBaseline.company_name || 'Customer Account',
+        monthly_charges: manualMrr || activeBaseline.monthly_charges || 1200
+      };
+      setResult(await simulateWhatIf(currentBase, simulated));
+    } finally {
+      setLoading(false);
+    }
   }
+
   function applyIntervention(type: 'contract' | 'support' | 'bundle') {
-    if (type === 'contract') set('contract_type', 'Two-Year');
-    if (type === 'support') set('has_tech_support', true);
-    if (type === 'bundle') setSimulated({ ...simulated, contract_type: 'Two-Year', has_tech_support: true, feature_adoption_rate: Math.min(100, simulated.feature_adoption_rate + 15), usage_trend_pct: Math.max(-80, simulated.usage_trend_pct + 15) });
+    if (type === 'contract') setSim('contract_type', 'Two-Year');
+    if (type === 'support') setSim('has_tech_support', true);
+    if (type === 'bundle') {
+      setSimulated(prev => ({
+        ...prev,
+        contract_type: 'Two-Year',
+        has_tech_support: true,
+        feature_adoption_rate: Math.min(100, prev.feature_adoption_rate + 15),
+        usage_trend_pct: Math.max(-80, prev.usage_trend_pct + 15)
+      }));
+    }
   }
+
+  function resetToBaseline() {
+    setSimulated({ ...activeBaseline });
+    setResult(null);
+  }
+
   return (
     <div className="page-content whatif-page">
       <div className="page-intro compact">
         <div>
-          <span className="eyebrow">Decision sandbox</span>
+          <span className="eyebrow">Decision Sandbox</span>
           <h2>What-if simulator</h2>
-          <p>Test a retention intervention before committing time, budget, or a customer conversation.</p>
+          <p>Model custom customer retention interventions and calculate projected ROI before taking action.</p>
         </div>
-        <div className="engine-status"><i /> Scenario engine ready</div>
+        <div className="engine-status"><i /> Simulator sandbox ready</div>
       </div>
 
-      <div className="whatif-account-banner">
-        <span>Simulating retention scenario for: <b>{baseline.company_name || 'Active Custom Account'}</b> {baseline.customer_id ? `(${baseline.customer_id})` : ''}</span>
-        <span className="whatif-mrr">${baseline.monthly_charges}/mo • {baseline.contract_type}</span>
+      {/* Account Source / Manual Custom Baseline Controls */}
+      <div className="whatif-account-selector-strip" style={{
+        background: 'var(--surface-primary)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: '12px',
+        padding: '16px 20px',
+        marginBottom: '20px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '16px',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', flex: 1 }}>
+          {workspaceAccounts.length > 0 && (
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Select Customer Account
+              <select
+                value={selectedAccId}
+                onChange={e => handleSelectWorkspaceAccount(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--surface-secondary)', color: 'var(--text-primary)', minWidth: '220px' }}
+              >
+                <option value="">-- Choose Account ({workspaceAccounts.length} in Workspace) --</option>
+                {workspaceAccounts.map(a => (
+                  <option key={a.id || a.customer_id} value={a.customer_id || a.id}>
+                    {a.company_name} ({a.customer_id}) - ${a.monthly_charges}/mo [{a.risk_tier}]
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Account / Company Name
+            <input
+              type="text"
+              value={manualAccountName}
+              placeholder="e.g. Enterprise Client"
+              onChange={e => handleManualBaselineChange(e.target.value, manualMrr)}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--surface-secondary)', color: 'var(--text-primary)', minWidth: '180px' }}
+            />
+          </label>
+
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Monthly Contract Revenue ($ MRR)
+            <input
+              type="number"
+              value={manualMrr}
+              min={10}
+              step={50}
+              onChange={e => handleManualBaselineChange(manualAccountName, Number(e.target.value))}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--surface-secondary)', color: 'var(--text-primary)', width: '130px' }}
+            />
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="secondary-button" onClick={resetToBaseline} title="Reset sliders to baseline">
+            <RotateCcw size={14} /> Reset
+          </button>
+        </div>
       </div>
 
       <div className="intervention-strip">
@@ -1057,28 +1197,29 @@ function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; ini
           <button className="secondary-button" onClick={() => applyIntervention('bundle')}><Sparkles size={15} /> Full retention bundle</button>
         </div>
       </div>
+
       <div className="whatif-layout">
         <section className="panel scenario-form">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">Simulated account</span>
-              <h3>Change the levers</h3>
+              <span className="eyebrow">Simulated levers</span>
+              <h3>Adjust account signals</h3>
             </div>
-            <span className="scenario-label">Baseline vs scenario</span>
+            <span className="scenario-label">Interactive sandbox</span>
           </div>
-          <RangeField label="Feature adoption" value={simulated.feature_adoption_rate} min={0} max={100} suffix="%" onChange={value => set('feature_adoption_rate', value)} />
-          <RangeField label="Usage trend" value={simulated.usage_trend_pct} min={-80} max={80} step={5} suffix="%" onChange={value => set('usage_trend_pct', value)} />
-          <RangeField label="Support tickets" value={simulated.support_tickets_90d} min={0} max={15} suffix="" onChange={value => set('support_tickets_90d', value)} />
+          <RangeField label="Feature adoption" value={simulated.feature_adoption_rate} min={0} max={100} suffix="%" onChange={value => setSim('feature_adoption_rate', value)} />
+          <RangeField label="Usage trend" value={simulated.usage_trend_pct} min={-80} max={80} step={5} suffix="%" onChange={value => setSim('usage_trend_pct', value)} />
+          <RangeField label="Support tickets" value={simulated.support_tickets_90d} min={0} max={15} suffix="" onChange={value => setSim('support_tickets_90d', value)} />
           <div className="toggle-row">
             <span>
               <b>Dedicated technical support</b>
               <small>Assigned engineer and priority SLA</small>
             </span>
-            <button className={`toggle ${simulated.has_tech_support ? 'on' : ''}`} onClick={() => set('has_tech_support', !simulated.has_tech_support)}><i /></button>
+            <button className={`toggle ${simulated.has_tech_support ? 'on' : ''}`} onClick={() => setSim('has_tech_support', !simulated.has_tech_support)}><i /></button>
           </div>
           <label className="scenario-select">
             Contract
-            <select value={simulated.contract_type} onChange={e => set('contract_type', e.target.value as CustomerProfile['contract_type'])}>
+            <select value={simulated.contract_type} onChange={e => setSim('contract_type', e.target.value as CustomerProfile['contract_type'])}>
               <option>Month-to-Month</option>
               <option>One-Year</option>
               <option>Two-Year</option>
@@ -1088,6 +1229,7 @@ function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; ini
             {loading ? 'Comparing scenarios...' : 'Compare scenario'} <ArrowRight size={17} />
           </button>
         </section>
+
         <section className="scenario-result">
           <div className="result-card comparison-card">
             <div className="comparison-head">
@@ -1098,7 +1240,7 @@ function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; ini
               <div>
                 <small>Baseline risk</small>
                 <strong>{result ? `${result.baseline_prediction.churn_probability.toFixed(1)}%` : '--'}</strong>
-                <span>Current relationship</span>
+                <span>Current status</span>
               </div>
               <ArrowRight size={19} />
               <div className="scenario-value">
@@ -1113,10 +1255,12 @@ function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; ini
                 <span><b>{formatMoney(result.revenue_saved)}</b> projected revenue protected</span>
               </div>
             ) : (
-              <div className="empty-result compact-empty">
-                <SlidersHorizontal size={27} />
-                <b>Your scenario appears here</b>
-                <span>Choose an intervention and compare the projected outcome.</span>
+              <div className="empty-result compact-empty" style={{ padding: '36px 16px', textAlign: 'center' }}>
+                <SlidersHorizontal size={28} style={{ color: 'var(--text-tertiary)', marginBottom: '10px' }} />
+                <b>No simulation run yet</b>
+                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
+                  Select or enter your customer baseline, adjust levers on the left, and click <b>Compare scenario</b> to simulate projected retention outcome.
+                </span>
               </div>
             )}
           </div>
@@ -1139,21 +1283,147 @@ function WhatIf({ baseline, initialSimulated }: { baseline: CustomerProfile; ini
   );
 }
 
-function ModelDiagnostics() {
+function ModelDiagnostics({
+  batch,
+  workspaceAccounts = [],
+  setPage
+}: {
+  batch: BatchPredictResponse | null;
+  workspaceAccounts?: ScoredAccountRecord[];
+  setPage: (page: Page) => void;
+}) {
+  const [activeTab, setActiveTab] = useState<'cohort' | 'benchmark'>('cohort');
   const [metrics, setMetrics] = useState<ModelMetrics | null>(null);
   const [error, setError] = useState(false);
-  useEffect(() => { fetchModelMetrics().then(setMetrics).catch(() => setError(true)); }, []);
+
+  useEffect(() => {
+    fetchModelMetrics().then(setMetrics).catch(() => setError(true));
+  }, []);
+
+  const totalEvaluated = batch ? batch.total_records : workspaceAccounts.length;
+  const highRiskCount = batch ? (batch.risk_distribution.High || 0) : workspaceAccounts.filter(a => a.risk_tier === 'High').length;
+  const criticalRiskCount = batch ? (batch.risk_distribution.Critical || 0) : workspaceAccounts.filter(a => a.risk_tier === 'Critical').length;
+  const moderateRiskCount = batch ? (batch.risk_distribution.Moderate || 0) : workspaceAccounts.filter(a => a.risk_tier === 'Moderate').length;
+  const lowRiskCount = batch ? (batch.risk_distribution.Low || 0) : workspaceAccounts.filter(a => a.risk_tier === 'Low').length;
+  const revenueAtRisk = batch ? batch.total_revenue_at_risk : workspaceAccounts.filter(a => a.risk_tier === 'High' || a.risk_tier === 'Critical').reduce((sum, a) => sum + (a.revenue_at_risk || a.monthly_charges * 6), 0);
+
   return (
     <div className="page-content model-page">
       <div className="page-intro compact">
         <div>
-          <span className="eyebrow">Trust and transparency</span>
+          <span className="eyebrow">Trust & Telemetry Diagnostics</span>
           <h2>Model diagnostics</h2>
-          <p>Understand how the prediction engine performs before you use its signal in a decision.</p>
+          <p>Inspect real telemetry from your uploaded cohort or examine the underlying foundational model architecture.</p>
         </div>
-        <div className="engine-status"><i /> Evaluation lab</div>
+        <div className="portfolio-view-switch">
+          <button
+            type="button"
+            className={activeTab === 'cohort' ? 'active' : ''}
+            onClick={() => setActiveTab('cohort')}
+          >
+            My Customer Cohort {totalEvaluated > 0 ? `(${totalEvaluated})` : ''}
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'benchmark' ? 'active' : ''}
+            onClick={() => setActiveTab('benchmark')}
+          >
+            Base Model Architecture & Benchmark
+          </button>
+        </div>
       </div>
-      {error ? (
+
+      {activeTab === 'cohort' ? (
+        totalEvaluated > 0 ? (
+          <>
+            <div className="metric-grid model-metrics">
+              <MetricCard label="Evaluated Accounts" value={totalEvaluated.toLocaleString()} delta="Uploaded cohort" icon={Users} accent="#238b67" />
+              <MetricCard label="High / Critical Risk" value={(highRiskCount + criticalRiskCount).toString()} delta={`${totalEvaluated > 0 ? (((highRiskCount + criticalRiskCount) / totalEvaluated) * 100).toFixed(1) : 0}% of cohort`} positive={false} icon={AlertTriangle} accent="#c75252" />
+              <MetricCard label="Healthy Accounts" value={lowRiskCount.toString()} delta={`${totalEvaluated > 0 ? ((lowRiskCount / totalEvaluated) * 100).toFixed(1) : 0}% safe`} positive={true} icon={ShieldCheck} accent="#238b67" />
+              <MetricCard label="Revenue at Risk" value={formatMoney(revenueAtRisk)} delta="Identified exposure" positive={false} icon={DollarSign} accent="#d76d3c" />
+            </div>
+
+            <div className="diagnostics-grid">
+              <section className="panel diagnostics-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">Uploaded Cohort Breakdown</span>
+                    <h3>Risk distribution across your customers</h3>
+                  </div>
+                  <span className="risk-badge low">{totalEvaluated} accounts</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="risk-badge critical">Critical</span> Urgent churn intervention
+                    </span>
+                    <b>{criticalRiskCount} accounts ({totalEvaluated > 0 ? ((criticalRiskCount / totalEvaluated) * 100).toFixed(1) : 0}%)</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="risk-badge high">High</span> Renewal sensitivity
+                    </span>
+                    <b>{highRiskCount} accounts ({totalEvaluated > 0 ? ((highRiskCount / totalEvaluated) * 100).toFixed(1) : 0}%)</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="risk-badge moderate">Moderate</span> Feature adoption plateau
+                    </span>
+                    <b>{moderateRiskCount} accounts ({totalEvaluated > 0 ? ((moderateRiskCount / totalEvaluated) * 100).toFixed(1) : 0}%)</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="risk-badge low">Low</span> Healthy expansion candidates
+                    </span>
+                    <b>{lowRiskCount} accounts ({totalEvaluated > 0 ? ((lowRiskCount / totalEvaluated) * 100).toFixed(1) : 0}%)</b>
+                  </div>
+                </div>
+                <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+                  <button className="primary-button" onClick={() => setPage('customers')}>
+                    <FileSpreadsheet size={16} /> View Cohorts & Accounts Table
+                  </button>
+                  <button className="secondary-button" onClick={() => setActiveTab('benchmark')}>
+                    Inspect Underlying Algorithm Weights
+                  </button>
+                </div>
+              </section>
+
+              <section className="panel diagnostics-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">Real-World Ingestion</span>
+                    <h3>How your cohort data powers Kairon</h3>
+                  </div>
+                  <Check size={16} />
+                </div>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  Every metric above is generated directly from your uploaded customer records (contract length, monthly charges, usage trends, NPS, and support requests).
+                </p>
+                <div style={{ background: 'var(--surface-secondary)', padding: '14px', borderRadius: '8px', marginTop: '14px' }}>
+                  <small style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Privacy & Data Sovereignty:</small>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px' }}>Your cohort data is processed locally in your workspace session and zero-knowledge protected. No cross-tenant data sharing occurs.</p>
+                </div>
+              </section>
+            </div>
+          </>
+        ) : (
+          <section className="panel empty-result diagnostics-empty" style={{ padding: '60px 24px', textAlign: 'center' }}>
+            <FileSpreadsheet size={40} style={{ color: 'var(--text-tertiary)', marginBottom: '16px' }} />
+            <h3>No customer cohort data uploaded yet</h3>
+            <p style={{ maxWidth: '520px', margin: '8px auto 24px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              Kairon does not fabricate or guess your customer numbers. Diagnostic distributions, at-risk MRR, and portfolio risk telemetry require your real customer CSV.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button className="primary-button" onClick={() => setPage('customers')}>
+                <UploadCloud size={16} /> Upload Customer CSV in Cohorts
+              </button>
+              <button className="secondary-button" onClick={() => setActiveTab('benchmark')}>
+                View Base Model Benchmark
+              </button>
+            </div>
+          </section>
+        )
+      ) : error ? (
         <section className="panel empty-result diagnostics-empty">
           <FlaskConical size={30} />
           <b>Diagnostics are offline</b>
@@ -1161,6 +1431,12 @@ function ModelDiagnostics() {
         </section>
       ) : metrics ? (
         <>
+          <div style={{ background: 'var(--surface-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '12px 18px', marginBottom: '20px' }}>
+            <small style={{ fontWeight: 600, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Foundational Reference Benchmark</small>
+            <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
+              This classifier was evaluated on a verified 7,043 enterprise SaaS holdout set to serve as the zero-day reference architecture before customer cohort ingestion.
+            </p>
+          </div>
           <div className="metric-grid model-metrics">
             <MetricCard label="ROC-AUC" value={metrics.roc_auc.toFixed(3)} delta="holdout" icon={Target} accent="#238b67" />
             <MetricCard label="Accuracy" value={`${(metrics.accuracy * 100).toFixed(1)}%`} delta="holdout" icon={Check} accent="#7b69ad" />
@@ -1181,7 +1457,7 @@ function ModelDiagnostics() {
                 <b>Actual safe</b><strong>{metrics.confusion_matrix.true_negatives}</strong><strong>{metrics.confusion_matrix.false_positives}</strong>
                 <b>Actual risk</b><strong>{metrics.confusion_matrix.false_negatives}</strong><strong>{metrics.confusion_matrix.true_positives}</strong>
               </div>
-              <p className="diagnostics-note">Evaluation is measured on a held-out test set. Use these metrics to understand model behavior, not as a guarantee for any single account.</p>
+              <p className="diagnostics-note">Evaluation is measured on a held-out test set. Use these metrics to understand foundational model behavior.</p>
             </section>
             <section className="panel diagnostics-panel">
               <div className="panel-heading">
@@ -1354,8 +1630,17 @@ function Customers({
   );
 }
 
-function Reviews({ currentUser }: { currentUser: UserIdentity }) {
-  const [accounts, setAccounts] = useState<WorkspaceReviewAccount[]>(() => loadReviewAccounts(currentUser.name));
+function Reviews({
+  currentUser,
+  accounts,
+  setAccounts,
+  setPage
+}: {
+  currentUser: UserIdentity;
+  accounts: WorkspaceReviewAccount[];
+  setAccounts: React.Dispatch<React.SetStateAction<WorkspaceReviewAccount[]>>;
+  setPage: (page: Page) => void;
+}) {
   const [selectedAccIndex, setSelectedAccIndex] = useState(0);
   const [mobileTab, setMobileTab] = useState<'queue' | 'detail'>('queue');
   const [notes, setNotes] = useState<ReviewNoteData[]>([]);
@@ -1373,14 +1658,14 @@ function Reviews({ currentUser }: { currentUser: UserIdentity }) {
   const [addRisk, setAddRisk] = useState<'High' | 'Moderate' | 'Low' | 'Critical'>('High');
   const [addPlan, setAddPlan] = useState('');
 
-  const selected = accounts[selectedAccIndex] || accounts[0] || {
-    id: 'AC-101', name: 'Sample Account', reason: 'Review', risk: 'Moderate', owner: currentUser.name, time: 'Now', mrr: 10000, riskScore: 50, suggestion: 'Review renewal terms'
-  };
+  const selected = accounts[selectedAccIndex] || accounts[0] || null;
 
   useEffect(() => {
     e2ee.getFingerprint().then(setFp);
     if (selected?.id) {
       loadReviewNotes(selected.id).then(setNotes);
+    } else {
+      setNotes([]);
     }
   }, [selected?.id]);
 
@@ -1419,6 +1704,14 @@ function Reviews({ currentUser }: { currentUser: UserIdentity }) {
     setAddId('');
     setAddReason('');
     setAddPlan('');
+  }
+
+  function handleRemoveReview(id: string) {
+    const updated = deleteReviewAccount(id);
+    setAccounts(updated);
+    if (selectedAccIndex >= updated.length) {
+      setSelectedAccIndex(Math.max(0, updated.length - 1));
+    }
   }
 
   const toggleCipher = (id: string) => {
@@ -1490,142 +1783,177 @@ function Reviews({ currentUser }: { currentUser: UserIdentity }) {
         </div>
       )}
 
-      {/* Mobile Queue / Detail Switcher */}
-      <div className="mobile-review-toggle">
-        <button className={mobileTab === 'queue' ? 'active' : ''} onClick={() => setMobileTab('queue')}>
-          Review Queue ({accounts.length})
-        </button>
-        <button className={mobileTab === 'detail' ? 'active' : ''} onClick={() => setMobileTab('detail')}>
-          {selected.name}
-        </button>
-      </div>
-
-      <div className={`review-layout ${mobileTab === 'queue' ? 'show-queue' : 'show-detail'}`}>
-        <section className="panel review-queue">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">Your queue</span>
-              <h3>Needs a decision</h3>
-            </div>
-            <span className="badge-count">{accounts.length} monitored</span>
-          </div>
-          {accounts.map((acc, index) => (
-            <button
-              className={`review-row ${index === selectedAccIndex ? 'selected' : ''}`}
-              key={acc.id}
-              onClick={() => {
-                setSelectedAccIndex(index);
-                setMobileTab('detail');
-              }}
-            >
-              <span className={`review-avatar avatar-${index % 3}`}>{acc.name.slice(0, 1)}</span>
-              <span>
-                <b>{acc.name}</b>
-                <small>{acc.reason} • {acc.id}</small>
-              </span>
-              <span className={`risk-badge ${riskTone(acc.risk)}`}>{acc.risk}</span>
-              <span className="review-time">{acc.time}</span>
-              <ArrowRight size={15} />
+      {accounts.length === 0 ? (
+        <section className="panel empty-result reviews-empty" style={{ padding: '60px 24px', textAlign: 'center', marginTop: '20px' }}>
+          <MessageSquare size={40} style={{ color: 'var(--text-tertiary)', marginBottom: '16px' }} />
+          <h3>No accounts in review queue</h3>
+          <p style={{ maxWidth: '520px', margin: '8px auto 24px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Your team review queue is clean. Kairon does not preload fake customer accounts.
+            You can add accounts manually or push assessed accounts here directly from the <b>Account Scorer</b> or your <b>Cohorts</b> CSV.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="primary-button" onClick={() => setShowAddModal(true)}>
+              <Plus size={16} /> Add review account manually
             </button>
-          ))}
+            <button className="secondary-button" onClick={() => setPage('scorer')}>
+              Go to Account Scorer
+            </button>
+            <button className="secondary-button" onClick={() => setPage('customers')}>
+              Upload Cohort CSV
+            </button>
+          </div>
         </section>
-
-        <section className="panel review-detail">
-          <div className="review-detail-head">
-            <div className={`review-avatar avatar-${selectedAccIndex % 3}`}>{selected.name.slice(0, 1)}</div>
-            <div>
-              <span className="eyebrow">Account review | {selected.id}</span>
-              <h3>{selected.name}</h3>
-              <p>Owner: {selected.owner || currentUser.name} | {formatMoney(selected.mrr)} MRR</p>
-            </div>
-            <div className="e2ee-indicator-badge" title={`End-to-End Encrypted (${fp})`}>
-              <ShieldCheck size={15} />
-              <span>E2EE Active</span>
-            </div>
+      ) : selected && (
+        <>
+          {/* Mobile Queue / Detail Switcher */}
+          <div className="mobile-review-toggle">
+            <button className={mobileTab === 'queue' ? 'active' : ''} onClick={() => setMobileTab('queue')}>
+              Review Queue ({accounts.length})
+            </button>
+            <button className={mobileTab === 'detail' ? 'active' : ''} onClick={() => setMobileTab('detail')}>
+              {selected.name}
+            </button>
           </div>
 
-          <div className="review-risk-banner">
-            <div>
-              <span className="eyebrow">Current health</span>
-              <strong>{selected.risk} risk <span>{selected.riskScore}%</span></strong>
-            </div>
-            <div className="risk-meter">
-              <i style={{ width: `${selected.riskScore}%` }} />
-            </div>
-            <p>Usage signals and adoption trends calibrated by the Kairon inference pipeline.</p>
-          </div>
-
-          <div className="review-section">
-            <span className="eyebrow">Suggested action plan</span>
-            <div className="suggestion">
-              <div className="suggestion-icon"><HeartHandshake size={18} /></div>
-              <div>
-                <b>{selected.suggestion}</b>
-                <p>Align executive champions, review feature adoption milestones, and resolve blockers.</p>
-                <small><TrendingDown size={13} /> Could reduce churn risk by 18-24%</small>
+          <div className={`review-layout ${mobileTab === 'queue' ? 'show-queue' : 'show-detail'}`}>
+            <section className="panel review-queue">
+              <div className="panel-heading">
+                <div>
+                  <span className="eyebrow">Your queue</span>
+                  <h3>Needs a decision</h3>
+                </div>
+                <span className="badge-count">{accounts.length} monitored</span>
               </div>
-            </div>
-          </div>
+              {accounts.map((acc, index) => (
+                <button
+                  className={`review-row ${index === selectedAccIndex ? 'selected' : ''}`}
+                  key={acc.id}
+                  onClick={() => {
+                    setSelectedAccIndex(index);
+                    setMobileTab('detail');
+                  }}
+                >
+                  <span className={`review-avatar avatar-${index % 3}`}>{acc.name.slice(0, 1)}</span>
+                  <span>
+                    <b>{acc.name}</b>
+                    <small>{acc.reason} • {acc.id}</small>
+                  </span>
+                  <span className={`risk-badge ${riskTone(acc.risk)}`}>{acc.risk}</span>
+                  <span className="review-time">{acc.time}</span>
+                  <ArrowRight size={15} />
+                </button>
+              ))}
+            </section>
 
-          <div className="notes-section">
-            <div className="notes-header">
-              <div>
-                <span className="eyebrow">Zero-Knowledge Encrypted Notes</span>
-                <h4>Team context log</h4>
+            <section className="panel review-detail">
+              <div className="review-detail-head">
+                <div className={`review-avatar avatar-${selectedAccIndex % 3}`}>{selected.name.slice(0, 1)}</div>
+                <div style={{ flex: 1 }}>
+                  <span className="eyebrow">Account review | {selected.id}</span>
+                  <h3>{selected.name}</h3>
+                  <p>Owner: {selected.owner || currentUser.name} | {formatMoney(selected.mrr)} MRR</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="e2ee-indicator-badge" title={`End-to-End Encrypted (${fp})`}>
+                    <ShieldCheck size={15} />
+                    <span>E2EE Active</span>
+                  </div>
+                  <button
+                    className="secondary-button"
+                    onClick={() => handleRemoveReview(selected.id)}
+                    title="Mark this review resolved and remove from queue"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
+                    Mark resolved
+                  </button>
+                </div>
               </div>
-              <span className="e2ee-key-pill" title={fp}><Key size={12} /> {fp}</span>
-            </div>
 
-            <div className="notes-stream">
-              {notes.length === 0 ? (
-                <p className="no-notes">No encrypted notes yet. Add your confidential team note below.</p>
-              ) : (
-                notes.map(n => (
-                  <div className="note-card" key={n.id}>
-                    <div className="note-top">
-                      <b>{n.author_name || currentUser.name}</b>
-                      <div className="note-meta">
-                        <span className="e2ee-badge"><LockKeyhole size={11} /> AES-256-GCM</span>
-                        <small>{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
-                      </div>
-                    </div>
-                    <p className="note-body">{n.note}</p>
-                    {n.raw_ciphertext && (
-                      <div className="ciphertext-box">
-                        <button className="cipher-toggle" onClick={() => toggleCipher(n.id)}>
-                          {showCiphertext[n.id] ? <EyeOff size={12} /> : <Eye size={12} />}
-                          <span>{showCiphertext[n.id] ? 'Hide raw ciphertext' : 'Inspect encrypted payload'}</span>
-                        </button>
-                        {showCiphertext[n.id] && (
-                          <pre className="cipher-raw">{n.raw_ciphertext}</pre>
+              <div className="review-risk-banner">
+                <div>
+                  <span className="eyebrow">Current health</span>
+                  <strong>{selected.risk} risk <span>{selected.riskScore}%</span></strong>
+                </div>
+                <div className="risk-meter">
+                  <i style={{ width: `${selected.riskScore}%` }} />
+                </div>
+                <p>Usage signals and adoption trends calibrated by the Kairon inference pipeline.</p>
+              </div>
+
+              <div className="review-section">
+                <span className="eyebrow">Suggested action plan</span>
+                <div className="suggestion">
+                  <div className="suggestion-icon"><HeartHandshake size={18} /></div>
+                  <div>
+                    <b>{selected.suggestion}</b>
+                    <p>Align executive champions, review feature adoption milestones, and resolve blockers.</p>
+                    <small><TrendingDown size={13} /> Could reduce churn risk by 18-24%</small>
+                  </div>
+                </div>
+              </div>
+
+              <div className="notes-section">
+                <div className="notes-header">
+                  <div>
+                    <span className="eyebrow">Zero-Knowledge Encrypted Notes</span>
+                    <h4>Team context log</h4>
+                  </div>
+                  <span className="e2ee-key-pill" title={fp}><Key size={12} /> {fp}</span>
+                </div>
+
+                <div className="notes-stream">
+                  {notes.length === 0 ? (
+                    <p className="no-notes">No encrypted notes yet. Add your confidential team note below.</p>
+                  ) : (
+                    notes.map(n => (
+                      <div className="note-card" key={n.id}>
+                        <div className="note-top">
+                          <b>{n.author_name || currentUser.name}</b>
+                          <div className="note-meta">
+                            <span className="e2ee-badge"><LockKeyhole size={11} /> AES-256-GCM</span>
+                            <small>{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                          </div>
+                        </div>
+                        <p className="note-body">{n.note}</p>
+                        {n.raw_ciphertext && (
+                          <div className="ciphertext-box">
+                            <button className="cipher-toggle" onClick={() => toggleCipher(n.id)}>
+                              {showCiphertext[n.id] ? <EyeOff size={12} /> : <Eye size={12} />}
+                              <span>{showCiphertext[n.id] ? 'Hide raw ciphertext' : 'Inspect encrypted payload'}</span>
+                            </button>
+                            {showCiphertext[n.id] && (
+                              <pre className="cipher-raw">{n.raw_ciphertext}</pre>
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+                    ))
+                  )}
+                </div>
 
-            <div className="comment-box">
-              <textarea
-                value={newNote}
-                onChange={e => setNewNote(e.target.value)}
-                placeholder="Add confidential customer note (encrypted client-side with AES-256-GCM before saving)..."
-              />
-              <button
-                className="primary-button"
-                onClick={handleAddNote}
-                disabled={!newNote.trim() || addingNote}
-              >
-                {addingNote ? 'Encrypting...' : <><Send size={16} /> Encrypt & Add Note</>}
-              </button>
-            </div>
+                <div className="comment-box">
+                  <textarea
+                    value={newNote}
+                    onChange={e => setNewNote(e.target.value)}
+                    placeholder="Add confidential customer note (encrypted client-side with AES-256-GCM before saving)..."
+                  />
+                  <button
+                    className="primary-button"
+                    onClick={handleAddNote}
+                    disabled={!newNote.trim() || addingNote}
+                  >
+                    {addingNote ? 'Encrypting...' : <><Send size={16} /> Encrypt & Add Note</>}
+                  </button>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
+        </>
+      )}
     </div>
   );
 }
+
 
 function Profile({
   setPage,
@@ -1938,6 +2266,7 @@ export default function App() {
   });
 
   const [workspaceAccounts, setWorkspaceAccounts] = useState<ScoredAccountRecord[]>(() => loadWorkspaceAccounts());
+  const [reviewAccounts, setReviewAccounts] = useState<WorkspaceReviewAccount[]>(() => loadReviewAccounts());
   const [profile, setProfile] = useState<CustomerProfile>(DEFAULT_PROFILE);
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -2052,7 +2381,7 @@ export default function App() {
   function handleSaveToReviews() {
     const accId = profile.customer_id?.trim() || `AC-${Date.now().toString(36).slice(-3).toUpperCase()}`;
     const accName = profile.company_name?.trim() || 'Custom Account';
-    saveReviewAccount({
+    const updated = saveReviewAccount({
       id: accId,
       name: accName,
       reason: prediction ? `${prediction.risk_tier} churn risk (${prediction.churn_probability.toFixed(0)}%)` : 'Workspace review',
@@ -2064,6 +2393,7 @@ export default function App() {
       suggestion: prediction?.retention_playbook[0]?.title || 'Executive alignment session',
       isUserAdded: true
     });
+    setReviewAccounts(updated);
     setPage('reviews');
   }
 
@@ -2129,10 +2459,10 @@ export default function App() {
 
   const content = page === 'overview' ? <Overview setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} onOpenTour={() => setTourOpen(true)} onOpenAI={() => setAiDrawerOpen(true)} />
     : page === 'scorer' ? <Scorer profile={profile} setProfile={setProfile} prediction={prediction} loading={loading} error={error} onScore={score} onSaveToReviews={handleSaveToReviews} onSimulateInWhatIf={handleSimulateInWhatIf} />
-    : page === 'whatif' ? <WhatIf baseline={profile} initialSimulated={whatIfSimulated || undefined} />
+    : page === 'whatif' ? <WhatIf baseline={profile} initialSimulated={whatIfSimulated || undefined} workspaceAccounts={workspaceAccounts} onSelectBaseline={setProfile} />
     : page === 'customers' ? <Customers batch={batch} setBatch={setBatch} workspaceAccounts={workspaceAccounts} onOpenScorer={handleOpenScorerForAccount} onOpenWhatIf={handleOpenWhatIfForAccount} />
-    : page === 'reviews' ? <Reviews currentUser={currentUser} />
-    : page === 'model' ? <ModelDiagnostics />
+    : page === 'reviews' ? <Reviews currentUser={currentUser} accounts={reviewAccounts} setAccounts={setReviewAccounts} setPage={setPage} />
+    : page === 'model' ? <ModelDiagnostics batch={batch} workspaceAccounts={workspaceAccounts} setPage={setPage} />
     : page === 'profile' ? <Profile setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} />
     : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} />;
 
@@ -2146,6 +2476,7 @@ export default function App() {
         onSignOut={logout}
         currentUser={currentUser}
         onOpenTour={() => setTourOpen(true)}
+        reviewsCount={reviewAccounts.length}
       />
       <div className={`app-main ${collapsed ? 'expanded' : ''}`}>
         <Topbar
@@ -2201,10 +2532,13 @@ export default function App() {
         isOpen={aiDrawerOpen}
         onClose={() => setAiDrawerOpen(false)}
         currentProfile={profile}
+        workspaceAccounts={workspaceAccounts}
+        onSelectAccount={(p) => setProfile(p)}
         onNavigateToWhatIf={(sim) => {
           setWhatIfSimulated(sim);
           setPage('whatif');
         }}
+        onRefreshReviewNotes={() => setReviewAccounts(loadReviewAccounts())}
       />
 
       {/* Platform Architecture & Product Tour Slides Modal */}
@@ -2236,7 +2570,7 @@ export default function App() {
         <button className={page === 'reviews' ? 'active' : ''} onClick={() => setPage('reviews')}>
           <div className="icon-badge-wrap">
             <HeartHandshake size={20} />
-            <b className="mobile-badge-dot" />
+            {reviewAccounts.length > 0 && <b className="mobile-badge-dot" />}
           </div>
           <span>Reviews</span>
         </button>
