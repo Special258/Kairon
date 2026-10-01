@@ -114,8 +114,9 @@ def main():
     bad_payload = json.dumps({"tenure_months": -5, "monthly_charges": 100.0, "contract_type": "Invalid"}).encode("utf-8")
     test_endpoint("8. Input Schema Validation (422 defense)", "http://127.0.0.1:8000/api/predict", method="POST", data=bad_payload, headers=demo_auth, expected_code=422)
 
-    # 9. Frontend SPA Delivery
-    resp, fe = test_endpoint("9. Frontend SPA Delivery", "http://localhost:5173/")
+    # 9. Frontend SPA Delivery (Served directly on port 8000 in unified production)
+    frontend_url = "http://127.0.0.1:8000/"
+    resp, fe = test_endpoint("9. Frontend SPA Delivery", frontend_url)
     assert '<div id="root">' in fe
     print("       -> Frontend index.html served with React hydration target")
 
