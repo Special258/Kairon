@@ -6,9 +6,6 @@
 
 <br/>
 
-![Status](https://img.shields.io/badge/Status-In%20Development-2563EB?style=for-the-badge)
-![AI/ML](https://img.shields.io/badge/AI%2FML-Powered-06B6D4?style=for-the-badge)
-
 </div>
 
 # 🧠 About Kairon
