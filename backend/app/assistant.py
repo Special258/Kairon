@@ -97,7 +97,7 @@ def resolve_customer_issue(request: AIAssistantRequest) -> AIAssistantResolution
         outreach = {
             "recipient": f"New Team Lead / VP at {company}",
             "subject": f"Continuing {company}'s partnership & executive ROI summary",
-            "body": f"Hi [Name],\n\nFirst, congratulations on stepping into your new role leading the team at {company}!\n\nOver the past {profile.tenure_months} months, {company} has leveraged our relationship intelligence infrastructure to safeguard customer operations and unlock key telemetry. With the recent transition, I wanted to share a concise 1-page executive summary of your team's historical wins and ensure your upcoming milestones remain uninterrupted.\n\nCould we find 15 minutes this Thursday or Friday for a brief introduction? I'd love to learn about your top priorities for this quarter and assign our dedicated technical lead to assist your team directly.\n\nBest regards,\nAlex Morgan | Customer Success Lead"
+            "body": f"Hi [Name],\n\nFirst, congratulations on stepping into your new role leading the team at {company}!\n\nOver the past {profile.tenure_months} months, {company} has leveraged our relationship intelligence infrastructure to safeguard customer operations and unlock key telemetry. With the recent transition, I wanted to share a concise 1-page executive summary of your team's historical wins and ensure your upcoming milestones remain uninterrupted.\n\nCould we find 15 minutes this Thursday or Friday for a brief introduction? I'd love to learn about your top priorities for this quarter and assign our dedicated technical lead to assist your team directly.\n\nBest regards,\n[Your Name] | Customer Success Lead"
         }
         playbook = [
             "Identify the incoming decision maker on LinkedIn or company directory within 24 hours.",
@@ -137,7 +137,7 @@ def resolve_customer_issue(request: AIAssistantRequest) -> AIAssistantResolution
         outreach = {
             "recipient": f"Lead Administrator at {company}",
             "subject": f"Proactive health check & workflow optimization for {company}",
-            "body": f"Hi [Name],\n\nOur telemetry detected a slight dip in query activity across your workspace over the past few weeks, and I wanted to proactively check in.\n\nOften when we see this pattern, teams have either encountered a workflow bottleneck or recently changed internal procedures. To ensure your team is getting maximum value, I have reserved time with our senior solutions engineer to run a complimentary health audit and optimize your pipelines.\n\nWould you have 20 minutes early next week for a quick diagnostic session?\n\nWarmly,\nAlex Morgan | Customer Success Lead"
+            "body": f"Hi [Name],\n\nOur telemetry detected a slight dip in query activity across your workspace over the past few weeks, and I wanted to proactively check in.\n\nOften when we see this pattern, teams have either encountered a workflow bottleneck or recently changed internal procedures. To ensure your team is getting maximum value, I have reserved time with our senior solutions engineer to run a complimentary health audit and optimize your pipelines.\n\nWould you have 20 minutes early next week for a quick diagnostic session?\n\nWarmly,\n[Your Name] | Customer Success Lead"
         }
         playbook = [
             "Audit system access logs to see which user seats or integrations stopped firing.",
@@ -177,7 +177,7 @@ def resolve_customer_issue(request: AIAssistantRequest) -> AIAssistantResolution
         outreach = {
             "recipient": f"Finance / Commercial Sponsor at {company}",
             "subject": f"Commercial alignment & partnership proposal for {company}",
-            "body": f"Hi [Name],\n\nAs we approach your upcoming billing milestone, our team conducted a portfolio review for {company}. Given your tenure and consistent platform utilization, we would love to formalize our partnership on an enterprise footing.\n\nWe have approved an exclusive annual restructuring that locks in your current rate against future inflation, includes dedicated 24/7 technical support at no additional cost, and provides a favorable payment schedule.\n\nI have attached the side-by-side comparison for your finance team. Let's connect for 10 minutes this week to finalize what works best for your budget.\n\nBest,\nAlex Morgan | Northstar Labs"
+            "body": f"Hi [Name],\n\nAs we approach your upcoming billing milestone, our team conducted a portfolio review for {company}. Given your tenure and consistent platform utilization, we would love to formalize our partnership on an enterprise footing.\n\nWe have approved an exclusive annual restructuring that locks in your current rate against future inflation, includes dedicated 24/7 technical support at no additional cost, and provides a favorable payment schedule.\n\nI have attached the side-by-side comparison for your finance team. Let's connect for 10 minutes this week to finalize what works best for your budget.\n\nBest,\n[Your Name] | Customer Relationship Intelligence Team"
         }
         playbook = [
             "Review customer gross margin and maximum allowable discount tier.",
@@ -218,7 +218,7 @@ def resolve_customer_issue(request: AIAssistantRequest) -> AIAssistantResolution
         outreach = {
             "recipient": f"Primary Contact at {company}",
             "subject": f"Strategic roadmap & partnership review for {company}",
-            "body": f"Hi [Name],\n\nWith {company}'s renewal coming up, our leadership team wanted to make sure we celebrate your milestone achievements over the past year and align our product roadmap with your upcoming initiatives.\n\nWe have prepared an executive review of your team's results and would love to share a preview of upcoming platform enhancements that directly address your recent requests.\n\nCould we schedule 20 minutes next Tuesday or Wednesday to review this together?\n\nWarm regards,\nAlex Morgan | Customer Success Lead"
+            "body": f"Hi [Name],\n\nWith {company}'s renewal coming up, our leadership team wanted to make sure we celebrate your milestone achievements over the past year and align our product roadmap with your upcoming initiatives.\n\nWe have prepared an executive review of your team's results and would love to share a preview of upcoming platform enhancements that directly address your recent requests.\n\nCould we schedule 20 minutes next Tuesday or Wednesday to review this together?\n\nWarm regards,\n[Your Name] | Customer Success Lead"
         }
         playbook = [
             "Review health metrics in Account Scorer and confirm top risk drivers.",

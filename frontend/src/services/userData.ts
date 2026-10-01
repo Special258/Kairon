@@ -176,24 +176,7 @@ const DEFAULT_PREFERENCES: UserPreferencesData = {
   reduce_motion: false
 };
 
-const INITIAL_REVIEW_NOTES: ReviewNoteData[] = [
-  {
-    id: 'note-1',
-    user_id: 'usr-1',
-    account_id: 'AC-1024',
-    author_name: 'Customer Success Team',
-    note: 'Met with VP of Eng. High risk due to champion turnover and delayed feature delivery. Scheduled technical rescue session for next Tuesday.',
-    created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString()
-  },
-  {
-    id: 'note-2',
-    user_id: 'usr-2',
-    account_id: 'BP-2048',
-    author_name: 'Lead Analyst',
-    note: 'Usage rebounded +12% following technical support tier enablement. Customer satisfied with response time.',
-    created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-  }
-];
+const INITIAL_REVIEW_NOTES: ReviewNoteData[] = [];
 
 export async function loadUserWorkspace() {
   const demo = getDemoUser();

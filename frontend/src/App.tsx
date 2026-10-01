@@ -509,7 +509,7 @@ function Overview({
         <div className="benchmark-preview-bar">
           <div>
             <Eye size={16} />
-            <span>Viewing <b>SaaS Benchmark Portfolio Demonstration</b> (2,481 Accounts).</span>
+            <span>Viewing <b>SaaS Benchmark Reference Dataset</b> (2,481 Accounts).</span>
           </div>
           <button className="secondary-button compact-btn" onClick={() => setViewMode('workspace')}>
             Return to My Workspace ({workspaceAccounts.length} accounts)
@@ -792,7 +792,7 @@ function Scorer({
       <div className="scorer-toolbar">
         <div className="scorer-toolbar-info">
           <Sparkles size={16} color="var(--teal)" />
-          <span><b>Custom Account Evaluation:</b> Input your customer parameters or load a demonstration scenario.</span>
+          <span><b>Custom Account Evaluation:</b> Input your customer parameters or load a sample scenario.</span>
         </div>
         <div className="scorer-toolbar-actions">
           <button
