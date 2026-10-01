@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import {
   Activity, ArrowRight, BarChart3, Bell, Check, CircleHelp, Clock3,
   Download, Eye, EyeOff, FileSpreadsheet, FlaskConical, Gauge, HeartHandshake,
-  Key, LayoutDashboard, LifeBuoy, LockKeyhole, LogOut, Menu, MessageSquare,
+  Key, LayoutDashboard, LifeBuoy, LockKeyhole, LockKeyholeOpen, LogOut, Menu, MessageSquare,
   MoreHorizontal, PanelLeft, Pencil, Plus, Search, Send, Settings, Shield,
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
   UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers
@@ -147,6 +147,7 @@ function AuthScreen({
   const [workspaceName, setWorkspaceName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -247,8 +248,27 @@ function AuthScreen({
               <label>
                 Password
                 <div className="input-with-icon">
-                  <input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" />
-                  <LockKeyhole size={16} />
+                  <input
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                  />
+                  <button
+                    type="button"
+                    className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
+                    onClick={() => setShowPassword(prev => !prev)}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <LockKeyholeOpen size={16} className="lock-icon open-anim" />
+                    ) : (
+                      <LockKeyhole size={16} className="lock-icon lock-anim" />
+                    )}
+                  </button>
                 </div>
               </label>
               {mode === 'signin' && (
