@@ -43,6 +43,14 @@ frontend.stderr.on('data', (data) => {
   if (line) console.log('\x1b[35m[Frontend]\x1b[0m', line);
 });
 
+backend.on('close', (code) => {
+  console.log(`[Backend] Process exited with code ${code}`);
+});
+
+frontend.on('close', (code) => {
+  console.log(`[Frontend] Process exited with code ${code}`);
+});
+
 function cleanup() {
   console.log('\n\x1b[31m%s\x1b[0m', 'Shutting down Kairon servers...');
   try { backend.kill(); } catch {}

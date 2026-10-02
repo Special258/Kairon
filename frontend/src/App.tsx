@@ -20,6 +20,7 @@ import {
 import type { BatchPredictResponse, CustomerProfile, ModelMetrics, PredictionResponse, WhatIfSimulationResponse } from './types';
 import { AIAssistantDrawer } from './components/AIAssistantDrawer';
 import { PlatformTourModal } from './components/PlatformTourModal';
+import { ToastContainer, showToast } from './components/Toast';
 
 export interface UserIdentity {
   name: string;
@@ -1508,15 +1509,28 @@ function Customers({
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
 
+  function sanitizeCsvCell(val: any): string {
+    const str = String(val ?? '').replace(/"/g, '""');
+    if (/^[=\+\-@\t\r]/.test(str)) {
+      return `"'${str}"`;
+    }
+    return `"${str}"`;
+  }
+
   async function handleFile(file?: File) {
-    if (!file || !file.name.endsWith('.csv')) return;
+    if (!file || !file.name.endsWith('.csv')) {
+      showToast('Please upload a valid .csv cohort file', 'warning');
+      return;
+    }
     setLoading(true);
     try {
       const response = await uploadBatchCSV(file);
       setBatch(response);
       if (onRefreshWorkspace) onRefreshWorkspace();
-    } catch {
+      showToast(`Scored and saved ${response.total_records} accounts to database`, 'success');
+    } catch (err: any) {
       setBatch(null);
+      showToast(err.message || 'Failed to process cohort CSV', 'error');
     } finally {
       setLoading(false);
     }
@@ -1528,8 +1542,10 @@ function Customers({
       const response = await loadEnterpriseSampleCohort();
       setBatch(response);
       if (onRefreshWorkspace) onRefreshWorkspace();
-    } catch {
+      showToast(`Loaded ${response.total_records} enterprise accounts into database`, 'success');
+    } catch (err: any) {
       setBatch(null);
+      showToast(err.message || 'Failed to load enterprise cohort', 'error');
     } finally {
       setLoading(false);
     }
@@ -1538,14 +1554,17 @@ function Customers({
   function handleExportCohort() {
     if (!batch) return;
     const header = "Customer ID,Company Name,Monthly Charges,Churn Risk,Risk Tier,Revenue at Risk\n";
-    const body = batch.predictions.map(p => `"${p.customer_id}","${p.company_name}",${p.monthly_charges},${p.churn_probability}%,${p.risk_tier},${p.revenue_at_risk}`).join("\n");
-    const blob = new Blob([header + body], { type: "text/csv" });
+    const body = batch.predictions.map(p => 
+      `${sanitizeCsvCell(p.customer_id)},${sanitizeCsvCell(p.company_name)},${p.monthly_charges},${p.churn_probability}%,${sanitizeCsvCell(p.risk_tier)},${p.revenue_at_risk}`
+    ).join("\n");
+    const blob = new Blob([header + body], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `kairon_scored_cohort_${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('Cohort exported to CSV (formula-injection protected)', 'info');
   }
 
   const rows = batch?.predictions.filter(row => `${row.company_name} ${row.customer_id}`.toLowerCase().includes(query.toLowerCase())) || [];
@@ -2159,6 +2178,7 @@ function SettingsPage({
     if (!workspaceInput.trim()) return;
     onUpdateWorkspaceName(workspaceInput.trim());
     setWsSaved(true);
+    showToast('Workspace name updated successfully', 'success');
     setTimeout(() => setWsSaved(false), 2500);
   }
 
@@ -2393,6 +2413,18 @@ export default function App() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        if (aiDrawerOpen) setAiDrawerOpen(false);
+        if (tourOpen) setTourOpen(false);
+        if (mobileNav) setMobileNav(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [aiDrawerOpen, tourOpen, mobileNav]);
 
   function handleUpdateWorkspaceName(newName: string) {
     setStoredWorkspaceName(newName);
@@ -2680,6 +2712,9 @@ export default function App() {
           <span>More</span>
         </button>
       </nav>
+
+      {/* Global Toast Notification System */}
+      <ToastContainer />
     </div>
   );
 }

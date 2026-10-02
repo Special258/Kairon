@@ -17,8 +17,12 @@ _initialized = False
 def get_db_connection() -> sqlite3.Connection:
     global _initialized
     os.makedirs(os.path.dirname(os.path.abspath(DB_FILE)), exist_ok=True)
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout=5000;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    conn.execute("PRAGMA cache_size=-64000;")
     if not _initialized:
         _initialized = True
         _run_migrations(conn)
@@ -72,6 +76,12 @@ def _run_migrations(conn: sqlite3.Connection) -> None:
             created_at TEXT NOT NULL
         )
     """)
+    # Performance indexes for high data scale
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_accounts_customer_id ON accounts(customer_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_accounts_company_name ON accounts(company_name)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_accounts_risk_tier ON accounts(risk_tier)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_review_notes_account_id ON review_notes(account_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pred_history_created_at ON prediction_history(created_at)")
     conn.commit()
 
 def init_db() -> None:

@@ -4,16 +4,16 @@ from pydantic import BaseModel, Field
 class CustomerProfile(BaseModel):
     customer_id: Optional[str] = Field(default="CUST-8821")
     company_name: Optional[str] = Field(default="Acme Corp")
-    tenure_months: int = Field(default=12, ge=1, le=120, description="Customer tenure in months")
-    monthly_charges: float = Field(default=150.0, ge=10.0, le=5000.0, description="Monthly recurring revenue in USD")
+    tenure_months: int = Field(default=12, ge=0, le=360, description="Customer tenure in months")
+    monthly_charges: float = Field(default=150.0, ge=0.0, le=1000000.0, description="Monthly recurring revenue in USD")
     contract_type: str = Field(default="Month-to-Month", description="Month-to-Month, One-Year, Two-Year")
     payment_method: str = Field(default="Electronic Check", description="Electronic Check, Credit Card, Bank Transfer, Manual Invoice")
-    support_tickets_90d: int = Field(default=4, ge=0, le=50, description="Support tickets logged in past 90 days")
+    support_tickets_90d: int = Field(default=4, ge=0, le=500, description="Support tickets logged in past 90 days")
     feature_adoption_rate: float = Field(default=45.0, ge=0.0, le=100.0, description="Feature adoption percentage")
-    late_payments_count: int = Field(default=1, ge=0, le=24, description="Number of late invoices")
+    late_payments_count: int = Field(default=1, ge=0, le=36, description="Number of late invoices")
     nps_score: int = Field(default=6, ge=0, le=10, description="Net Promoter Score (0-10)")
     has_tech_support: bool = Field(default=False, description="Has dedicated technical support tier")
-    usage_trend_pct: float = Field(default=-15.0, ge=-100.0, le=100.0, description="Usage growth or dip percentage over 90 days")
+    usage_trend_pct: float = Field(default=-15.0, ge=-100.0, le=500.0, description="Usage growth or dip percentage over 90 days")
 
 class FeatureImpact(BaseModel):
     feature_name: str
