@@ -7,7 +7,7 @@ import {
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
   UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers
 } from 'lucide-react';
-import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV } from './services/api';
+import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV, loadEnterpriseSampleCohort, downloadCohortTemplate } from './services/api';
 import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
 import { e2ee } from './services/e2ee';
 import {
@@ -477,14 +477,14 @@ function Overview({
   // Live calculations for user's workspace
   const totalProtected = hasAccounts
     ? workspaceAccounts
-        .filter(a => a.risk_tier === 'Low' || a.risk_tier === 'Moderate')
-        .reduce((sum, a) => sum + (a.estimated_clv || a.monthly_charges * 12), 0)
+      .filter(a => a.risk_tier === 'Low' || a.risk_tier === 'Moderate')
+      .reduce((sum, a) => sum + (a.estimated_clv || a.monthly_charges * 12), 0)
     : 0;
 
   const totalAtRisk = hasAccounts
     ? workspaceAccounts
-        .filter(a => a.risk_tier === 'High' || a.risk_tier === 'Critical')
-        .reduce((sum, a) => sum + (a.revenue_at_risk || a.monthly_charges * 6), 0)
+      .filter(a => a.risk_tier === 'High' || a.risk_tier === 'Critical')
+      .reduce((sum, a) => sum + (a.revenue_at_risk || a.monthly_charges * 6), 0)
     : 0;
 
   const avgHealthScore = hasAccounts
@@ -1493,24 +1493,63 @@ function Customers({
   setBatch,
   workspaceAccounts,
   onOpenScorer,
-  onOpenWhatIf
+  onOpenWhatIf,
+  onRefreshWorkspace
 }: {
   batch: BatchPredictResponse | null;
   setBatch: (batch: BatchPredictResponse | null) => void;
   workspaceAccounts: ScoredAccountRecord[];
   onOpenScorer: (acc?: ScoredAccountRecord) => void;
   onOpenWhatIf: (acc: ScoredAccountRecord) => void;
+  onRefreshWorkspace?: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
+
   async function handleFile(file?: File) {
     if (!file || !file.name.endsWith('.csv')) return;
     setLoading(true);
-    try { setBatch(await uploadBatchCSV(file)); } catch { setBatch(null); } finally { setLoading(false); }
+    try {
+      const response = await uploadBatchCSV(file);
+      setBatch(response);
+      if (onRefreshWorkspace) onRefreshWorkspace();
+    } catch {
+      setBatch(null);
+    } finally {
+      setLoading(false);
+    }
   }
+
+  async function handleLoadSampleCohort() {
+    setLoading(true);
+    try {
+      const response = await loadEnterpriseSampleCohort();
+      setBatch(response);
+      if (onRefreshWorkspace) onRefreshWorkspace();
+    } catch {
+      setBatch(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleExportCohort() {
+    if (!batch) return;
+    const header = "Customer ID,Company Name,Monthly Charges,Churn Risk,Risk Tier,Revenue at Risk\n";
+    const body = batch.predictions.map(p => `"${p.customer_id}","${p.company_name}",${p.monthly_charges},${p.churn_probability}%,${p.risk_tier},${p.revenue_at_risk}`).join("\n");
+    const blob = new Blob([header + body], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kairon_scored_cohort_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const rows = batch?.predictions.filter(row => `${row.company_name} ${row.customer_id}`.toLowerCase().includes(query.toLowerCase())) || [];
+
   return (
     <div className="page-content customers-page">
       <div className="page-intro compact">
@@ -1519,17 +1558,45 @@ function Customers({
           <h2>Cohorts & accounts</h2>
           <p>Bring a cohort into focus and turn risk distribution into a team plan.</p>
         </div>
-        <button className="secondary-button" onClick={() => fileRef.current?.click()}><UploadCloud size={16} /> Import CSV</button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="secondary-button" onClick={() => fileRef.current?.click()}>
+            <UploadCloud size={16} /> Import CSV
+          </button>
+        </div>
       </div>
+
       {!batch ? (
         <>
           <section className={`upload-panel ${dragging ? 'dragging' : ''}`} onClick={() => fileRef.current?.click()} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}>
             <input ref={fileRef} type="file" accept=".csv" hidden onChange={e => handleFile(e.target.files?.[0])} />
             <div className="upload-art"><FileSpreadsheet size={28} /></div>
-            <h3>{loading ? 'Scoring your cohort...' : 'Drop a customer cohort here'}</h3>
-            <p>Upload a CSV to score accounts in bulk and see where your team can make the biggest difference.</p>
-            <button className="primary-button" onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}><UploadCloud size={16} /> Choose CSV file</button>
-            <small>Required fields are documented in the downloadable template.</small>
+            <h3>{loading ? 'Scoring your cohort and persisting to database...' : 'Drop a customer cohort here'}</h3>
+            <p>Upload a CSV to score accounts in bulk and automatically store them in the database for team analysis.</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
+              <button className="primary-button" onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}>
+                <UploadCloud size={16} /> Choose CSV file
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={e => { e.stopPropagation(); void handleLoadSampleCohort(); }}
+                disabled={loading}
+              >
+                <Sparkles size={16} /> Load Enterprise Sample Cohort (25 Accounts)
+              </button>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void downloadCohortTemplate();
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: '13px' }}
+              >
+                Download CSV cohort template
+              </button>
+            </div>
           </section>
 
           {workspaceAccounts.length > 0 && (
@@ -1588,10 +1655,10 @@ function Customers({
       ) : (
         <>
           <div className="cohort-summary">
-            <MetricCard label="Accounts scored" value={batch.total_records.toLocaleString()} delta="8.2%" icon={Users} accent="#7b69ad" />
-            <MetricCard label="High-risk accounts" value={batch.high_risk_count.toString()} delta="3.8%" positive={false} icon={Zap} accent="#c75252" />
-            <MetricCard label="Avg. churn risk" value={`${batch.avg_churn_probability.toFixed(1)}%`} delta="2.4%" positive={false} icon={TrendingDown} accent="#c78b1a" />
-            <MetricCard label="Revenue exposed" value={formatMoney(batch.total_revenue_at_risk)} delta="6.1%" positive={false} icon={BarChart3} accent="#d76d3c" />
+            <MetricCard label="Accounts scored" value={batch.total_records.toLocaleString()} delta="Cohort Batch" icon={Users} accent="#7b69ad" />
+            <MetricCard label="High-risk accounts" value={batch.high_risk_count.toString()} delta={`${((batch.high_risk_count / batch.total_records) * 100).toFixed(1)}%`} positive={false} icon={Zap} accent="#c75252" />
+            <MetricCard label="Avg. churn risk" value={`${batch.avg_churn_probability.toFixed(1)}%`} delta="Mean probability" positive={false} icon={TrendingDown} accent="#c78b1a" />
+            <MetricCard label="Revenue exposed" value={formatMoney(batch.total_revenue_at_risk)} delta="Identified MRR" positive={false} icon={BarChart3} accent="#d76d3c" />
           </div>
           <section className="panel table-panel">
             <div className="table-toolbar">
@@ -1601,25 +1668,59 @@ function Customers({
               </div>
               <div className="table-actions">
                 <div className="table-search"><Search size={15} /><input placeholder="Search accounts..." value={query} onChange={e => setQuery(e.target.value)} /></div>
-                <button className="secondary-button"><Download size={15} /> Export</button>
+                <button className="secondary-button" onClick={handleExportCohort}><Download size={15} /> Export CSV</button>
+                <button className="secondary-button" onClick={() => setBatch(null)}><RotateCcw size={15} /> Upload another cohort</button>
               </div>
             </div>
             <div className="data-table-wrap">
               <table>
                 <thead>
-                  <tr><th>Account</th><th>Monthly revenue</th><th>Churn risk</th><th>Tier</th><th>Revenue at risk</th><th /></tr>
+                  <tr><th>Account</th><th>Monthly revenue</th><th>Churn risk</th><th>Tier</th><th>Revenue at risk</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
-                  {rows.slice(0, 50).map(row => (
-                    <tr key={row.customer_id}>
-                      <td><div className="account-cell"><span className="company-avatar">{row.company_name.slice(0, 1)}</span><span><b>{row.company_name}</b><small>{row.customer_id}</small></span></div></td>
-                      <td>{formatMoney(row.monthly_charges)}</td>
-                      <td><b style={{ color: row.risk_color }}>{row.churn_probability.toFixed(1)}%</b></td>
-                      <td><span className={`risk-badge ${riskTone(row.risk_tier)}`}>{row.risk_tier}</span></td>
-                      <td>{formatMoney(row.revenue_at_risk)}</td>
-                      <td><button className="icon-button"><MoreHorizontal size={16} /></button></td>
-                    </tr>
-                  ))}
+                  {rows.slice(0, 50).map(row => {
+                    const rowRecord: ScoredAccountRecord = {
+                      id: `cohort-${row.customer_id}`,
+                      customer_id: row.customer_id,
+                      company_name: row.company_name,
+                      monthly_charges: row.monthly_charges,
+                      churn_probability: row.churn_probability,
+                      risk_tier: row.risk_tier,
+                      risk_color: row.risk_color,
+                      revenue_at_risk: row.revenue_at_risk,
+                      estimated_clv: row.monthly_charges * 24,
+                      profile: {
+                        customer_id: row.customer_id,
+                        company_name: row.company_name,
+                        monthly_charges: row.monthly_charges,
+                        tenure_months: 12,
+                        contract_type: ((row.contract_type as any) === 'Two-Year' ? 'Two-Year' : (row.contract_type as any) === 'One-Year' ? 'One-Year' : 'Month-to-Month') as any,
+                        payment_method: 'Credit Card',
+                        support_tickets_90d: row.support_tickets_90d ?? 2,
+                        feature_adoption_rate: 65,
+                        late_payments_count: 0,
+                        nps_score: row.nps_score ?? 7,
+                        has_tech_support: true,
+                        usage_trend_pct: 0
+                      },
+                      created_at: new Date().toISOString()
+                    };
+                    return (
+                      <tr key={row.customer_id}>
+                        <td><div className="account-cell"><span className="company-avatar">{row.company_name.slice(0, 1)}</span><span><b>{row.company_name}</b><small>{row.customer_id}</small></span></div></td>
+                        <td>{formatMoney(row.monthly_charges)}</td>
+                        <td><b style={{ color: row.risk_color }}>{row.churn_probability.toFixed(1)}%</b></td>
+                        <td><span className={`risk-badge ${riskTone(row.risk_tier)}`}>{row.risk_tier}</span></td>
+                        <td>{formatMoney(row.revenue_at_risk)}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button className="secondary-button" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => onOpenWhatIf(rowRecord)}>Simulate</button>
+                            <button className="secondary-button" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => onOpenScorer(rowRecord)}>Scorer</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -2459,12 +2560,12 @@ export default function App() {
 
   const content = page === 'overview' ? <Overview setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} onOpenTour={() => setTourOpen(true)} onOpenAI={() => setAiDrawerOpen(true)} />
     : page === 'scorer' ? <Scorer profile={profile} setProfile={setProfile} prediction={prediction} loading={loading} error={error} onScore={score} onSaveToReviews={handleSaveToReviews} onSimulateInWhatIf={handleSimulateInWhatIf} />
-    : page === 'whatif' ? <WhatIf baseline={profile} initialSimulated={whatIfSimulated || undefined} workspaceAccounts={workspaceAccounts} onSelectBaseline={setProfile} />
-    : page === 'customers' ? <Customers batch={batch} setBatch={setBatch} workspaceAccounts={workspaceAccounts} onOpenScorer={handleOpenScorerForAccount} onOpenWhatIf={handleOpenWhatIfForAccount} />
-    : page === 'reviews' ? <Reviews currentUser={currentUser} accounts={reviewAccounts} setAccounts={setReviewAccounts} setPage={setPage} />
-    : page === 'model' ? <ModelDiagnostics batch={batch} workspaceAccounts={workspaceAccounts} setPage={setPage} />
-    : page === 'profile' ? <Profile setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} />
-    : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} />;
+      : page === 'whatif' ? <WhatIf baseline={profile} initialSimulated={whatIfSimulated || undefined} workspaceAccounts={workspaceAccounts} onSelectBaseline={setProfile} />
+        : page === 'customers' ? <Customers batch={batch} setBatch={setBatch} workspaceAccounts={workspaceAccounts} onOpenScorer={handleOpenScorerForAccount} onOpenWhatIf={handleOpenWhatIfForAccount} onRefreshWorkspace={() => setWorkspaceAccounts(loadWorkspaceAccounts())} />
+          : page === 'reviews' ? <Reviews currentUser={currentUser} accounts={reviewAccounts} setAccounts={setReviewAccounts} setPage={setPage} />
+            : page === 'model' ? <ModelDiagnostics batch={batch} workspaceAccounts={workspaceAccounts} setPage={setPage} />
+              : page === 'profile' ? <Profile setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} />
+                : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} />;
 
   return (
     <div className="product-app">

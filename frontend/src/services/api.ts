@@ -75,6 +75,30 @@ export async function uploadBatchCSV(file: File): Promise<BatchPredictResponse> 
   return res.json();
 }
 
+export async function loadEnterpriseSampleCohort(): Promise<BatchPredictResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/cohort/load-enterprise-sample`, {
+    method: 'POST',
+    headers: await authHeaders()
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed to load enterprise cohort' }));
+    throw new Error(err.detail || 'Failed to load enterprise cohort');
+  }
+  return res.json();
+}
+
+export async function downloadCohortTemplate(): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/cohort/template`);
+  if (!res.ok) throw new Error('Failed to download template');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kairon_cohort_template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export async function triggerModelRetrain(): Promise<any> {
   const res = await fetch(`${API_BASE_URL}/api/model/retrain`, {
     method: 'POST',

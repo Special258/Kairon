@@ -1,0 +1,26 @@
+customer_id,company_name,tenure_months,monthly_charges,contract_type,payment_method,support_tickets_90d,feature_adoption_rate,late_payments_count,nps_score,has_tech_support,usage_trend_pct
+ENT-101,Stripe Payments Cloud,36,4800.0,Two-Year,Bank Transfer,1,92.0,0,10,True,24.0
+ENT-102,Snowflake Data Warehousing,14,3200.0,One-Year,Credit Card,2,78.0,0,8,True,12.0
+ENT-103,Datadog Observability,6,1650.0,Month-to-Month,Credit Card,5,44.0,1,5,False,-18.0
+ENT-104,Figma Design Platform,22,2400.0,One-Year,Credit Card,1,85.0,0,9,True,15.0
+ENT-105,HubSpot Marketing Hub,4,850.0,Month-to-Month,Electronic Check,6,28.0,2,3,False,-35.0
+ENT-106,Notion Workspace Enterprise,28,1950.0,Two-Year,Bank Transfer,0,95.0,0,10,True,30.0
+ENT-107,Salesforce Revenue Cloud,48,8200.0,Two-Year,Bank Transfer,3,72.0,0,7,True,5.0
+ENT-108,Atlassian Jira Agile,18,2100.0,One-Year,Credit Card,2,68.0,0,8,True,8.0
+ENT-109,Twilio Communications,9,3400.0,Month-to-Month,Credit Card,4,52.0,1,6,False,-12.0
+ENT-110,HashiCorp Terraform Cloud,12,2750.0,One-Year,Credit Card,2,64.0,0,7,True,6.0
+ENT-111,Okta Identity Management,30,3900.0,Two-Year,Bank Transfer,1,88.0,0,9,True,18.0
+ENT-112,Cloudflare Network Edge,16,4200.0,One-Year,Credit Card,2,81.0,0,8,True,14.0
+ENT-113,Canva Graphics Suite,3,450.0,Month-to-Month,Electronic Check,5,22.0,2,2,False,-40.0
+ENT-114,Elasticsearch Log Analytics,11,2900.0,Month-to-Month,Credit Card,4,49.0,1,5,False,-8.0
+ENT-115,GitLab DevOps Platform,25,3600.0,Two-Year,Bank Transfer,1,84.0,0,9,True,20.0
+ENT-116,Zoom Video Communications,40,2500.0,Two-Year,Credit Card,1,75.0,0,8,True,4.0
+ENT-117,DocuSign Agreement Cloud,15,1800.0,One-Year,Credit Card,2,70.0,0,7,True,7.0
+ENT-118,PagerDuty Incident Response,7,1250.0,Month-to-Month,Credit Card,4,38.0,1,4,False,-22.0
+ENT-119,Miro Visual Collaboration,19,1600.0,One-Year,Credit Card,1,79.0,0,9,True,11.0
+ENT-120,Zendesk Support Enterprise,5,1100.0,Month-to-Month,Electronic Check,7,30.0,2,3,False,-32.0
+ENT-121,Asana Work Management,13,1450.0,One-Year,Credit Card,2,65.0,0,7,True,5.0
+ENT-122,ServiceNow Enterprise Ops,34,9500.0,Two-Year,Bank Transfer,2,82.0,0,8,True,16.0
+ENT-123,CrowdStrike Falcon Security,20,5400.0,Two-Year,Bank Transfer,0,91.0,0,10,True,25.0
+ENT-124,Gong Revenue Intelligence,8,2200.0,Month-to-Month,Credit Card,3,56.0,0,6,True,-5.0
+ENT-125,Vercel Frontend Platform,10,1750.0,Month-to-Month,Credit Card,3,60.0,0,7,True,9.0

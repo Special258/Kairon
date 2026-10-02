@@ -21,7 +21,7 @@ from app.assistant import (
 )
 from app.security import require_user, rate_limiter, sanitize_string, get_security_posture
 from app.database import (
-    init_db, get_all_accounts, save_account, delete_account, clear_all_accounts,
+    init_db, get_all_accounts, save_account, save_accounts_batch, delete_account, clear_all_accounts,
     get_notes_for_account, save_note, get_workspace_setting, set_workspace_setting
 )
 from contextlib import asynccontextmanager
@@ -174,9 +174,110 @@ async def batch_predict(file: UploadFile = File(...), _: dict = Depends(require_
             raise HTTPException(status_code=413, detail="CSV file must be 10 MB or smaller.")
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
         results = predict_batch_df(df)
+
+        # Directly persist parsed and scored records to database
+        db_accounts = []
+        for p in results.get("predictions", []):
+            cid = str(p.get("customer_id", ""))
+            cname = str(p.get("company_name", ""))
+            mrr = float(p.get("monthly_charges", 0))
+            churn_p = float(p.get("churn_probability", 0))
+            db_accounts.append({
+                "id": f"cohort-{cid}",
+                "customer_id": cid,
+                "company_name": cname,
+                "monthly_charges": mrr,
+                "churn_probability": churn_p,
+                "risk_tier": p.get("risk_tier", "Low"),
+                "risk_color": p.get("risk_color", "#238b67"),
+                "revenue_at_risk": float(p.get("revenue_at_risk", 0)),
+                "estimated_clv": mrr * 24,
+                "profile": {
+                    "customer_id": cid,
+                    "company_name": cname,
+                    "monthly_charges": mrr,
+                    "tenure_months": 12,
+                    "contract_type": p.get("contract_type", "One-Year"),
+                    "payment_method": "Credit Card",
+                    "support_tickets_90d": int(p.get("support_tickets_90d", 1)),
+                    "feature_adoption_rate": 65,
+                    "late_payments_count": 0,
+                    "nps_score": int(p.get("nps_score", 8)),
+                    "has_tech_support": True,
+                    "usage_trend_pct": 5
+                }
+            })
+        if db_accounts:
+            save_accounts_batch(db_accounts)
+
         return results
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to process CSV: {str(e)}")
+
+@app.get("/api/cohort/template")
+def get_cohort_template():
+    csv_template = (
+        "customer_id,company_name,tenure_months,monthly_charges,contract_type,payment_method,support_tickets_90d,feature_adoption_rate,late_payments_count,nps_score,has_tech_support,usage_trend_pct\n"
+        "ENT-101,Acme Enterprise Cloud,24,4200.0,One-Year,Credit Card,1,85.0,0,9,True,15.0\n"
+        "ENT-102,Global Logistics Tech,8,1850.0,Month-to-Month,Electronic Check,4,42.0,1,5,False,-12.0\n"
+    )
+    return Response(
+        content=csv_template,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=kairon_cohort_template.csv"}
+    )
+
+@app.post("/api/cohort/load-enterprise-sample")
+def load_enterprise_sample(_: dict = Depends(require_user)):
+    """Loads enterprise customer sample directly from backend server and stores into database."""
+    sample_file_path = os.path.join(os.path.dirname(__file__), "sample_enterprise_cohort.csv")
+    if not os.path.exists(sample_file_path):
+        sample_file_path = os.path.join(os.path.dirname(__file__), "dataset.csv")
+    
+    df = pd.read_csv(sample_file_path)
+    if "company_name" not in df.columns:
+        df["company_name"] = [f"Enterprise Corp {i+1}" for i in range(len(df))]
+    if "customer_id" not in df.columns:
+        df["customer_id"] = [f"ENT-{100+i}" for i in range(len(df))]
+    
+    df_sample = df.head(25)
+    results = predict_batch_df(df_sample)
+    
+    db_accounts = []
+    for p in results.get("predictions", []):
+        cid = str(p.get("customer_id", ""))
+        cname = str(p.get("company_name", ""))
+        mrr = float(p.get("monthly_charges", 0))
+        churn_p = float(p.get("churn_probability", 0))
+        db_accounts.append({
+            "id": f"cohort-{cid}",
+            "customer_id": cid,
+            "company_name": cname,
+            "monthly_charges": mrr,
+            "churn_probability": churn_p,
+            "risk_tier": p.get("risk_tier", "Low"),
+            "risk_color": p.get("risk_color", "#238b67"),
+            "revenue_at_risk": float(p.get("revenue_at_risk", 0)),
+            "estimated_clv": mrr * 24,
+            "profile": {
+                "customer_id": cid,
+                "company_name": cname,
+                "monthly_charges": mrr,
+                "tenure_months": 12,
+                "contract_type": p.get("contract_type", "One-Year"),
+                "payment_method": "Credit Card",
+                "support_tickets_90d": int(p.get("support_tickets_90d", 1)),
+                "feature_adoption_rate": 65,
+                "late_payments_count": 0,
+                "nps_score": int(p.get("nps_score", 8)),
+                "has_tech_support": True,
+                "usage_trend_pct": 5
+            }
+        })
+    if db_accounts:
+        save_accounts_batch(db_accounts)
+
+    return results
 
 @app.post("/api/model/retrain")
 def retrain_model(_: dict = Depends(require_user)):

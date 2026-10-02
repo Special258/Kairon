@@ -143,6 +143,46 @@ def save_account(account_data: Dict[str, Any]) -> Dict[str, Any]:
         account_data["id"] = acc_id
         return account_data
 
+def save_accounts_batch(accounts: List[Dict[str, Any]]) -> None:
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        for account_data in accounts:
+            acc_id = account_data.get("id") or f"acc_{int(datetime.now(timezone.utc).timestamp()*1000)}"
+            customer_id = account_data.get("customer_id", "")
+            company_name = account_data.get("company_name", "")
+            monthly_charges = float(account_data.get("monthly_charges", 0))
+            churn_prob = float(account_data.get("churn_probability", 0))
+            risk_tier = account_data.get("risk_tier", "Low")
+            risk_color = account_data.get("risk_color", "#238b67")
+            rev_at_risk = float(account_data.get("revenue_at_risk", 0))
+            clv = float(account_data.get("estimated_clv", 0))
+            profile_json = json.dumps(account_data.get("profile", {}))
+            created_at = account_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+
+            cursor.execute("""
+                DELETE FROM accounts 
+                WHERE id = ? OR (customer_id = ? AND customer_id != '') OR (lower(company_name) = lower(?) AND company_name != '')
+            """, (acc_id, customer_id, company_name))
+
+            cursor.execute("""
+                INSERT INTO accounts (
+                    id, customer_id, company_name, monthly_charges,
+                    churn_probability, risk_tier, risk_color, revenue_at_risk,
+                    estimated_clv, profile_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                acc_id, customer_id, company_name, monthly_charges,
+                churn_prob, risk_tier, risk_color, rev_at_risk,
+                clv, profile_json, created_at
+            ))
+
+            hist_id = f"hist_{acc_id}_{int(datetime.now(timezone.utc).timestamp()*1000)}"
+            cursor.execute("""
+                INSERT INTO prediction_history (id, customer_id, company_name, churn_probability, risk_tier, revenue_at_risk, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (hist_id, customer_id, company_name, churn_prob, risk_tier, rev_at_risk, created_at))
+        conn.commit()
+
 def delete_account(account_id: str) -> bool:
     with get_db_connection() as conn:
         cursor = conn.cursor()
