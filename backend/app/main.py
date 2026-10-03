@@ -118,8 +118,10 @@ def api_status():
         "docs_url": "/docs"
     }
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root(request: Request):
+    if request.method == "HEAD":
+        return Response(status_code=200)
     if "application/json" in request.headers.get("accept", ""):
         return {
             "status": "online",
@@ -135,8 +137,10 @@ def root(request: Request):
         "docs_url": "/docs"
     }
 
-@app.get("/api/health")
-def health_check():
+@app.api_route("/api/health", methods=["GET", "HEAD"])
+def health_check(request: Request):
+    if request.method == "HEAD":
+        return Response(status_code=200)
     _, _, metadata = get_artifacts()
     return {
         "status": "healthy",
