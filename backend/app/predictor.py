@@ -340,21 +340,131 @@ def simulate_what_if(baseline: CustomerProfile, simulated: CustomerProfile) -> W
         key_interventions_identified=interventions
     )
 
+def normalize_and_clean_batch_df(raw_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Intelligently normalizes column names, maps common industry aliases (MRR, company,
+    tenure, tickets, NPS), and imputes sensible defaults so ANY CSV uploaded by ANY user
+    is processed seamlessly without format failure.
+    """
+    df = raw_df.copy()
+    
+    col_map = {}
+    for col in df.columns:
+        norm = str(col).strip().lower().replace(" ", "_").replace("-", "_")
+        col_map[col] = norm
+    df = df.rename(columns=col_map)
+    
+    aliases = {
+        "customer_id": ["customer_id", "cust_id", "id", "account_id", "client_id", "user_id", "account_number", "customer_number"],
+        "company_name": ["company_name", "company", "account_name", "account", "customer_name", "customer", "client_name", "client", "org_name", "org", "organization", "name", "business", "business_name"],
+        "monthly_charges": ["monthly_charges", "monthly_charge", "monthlycharges", "mrr", "monthly_revenue", "revenue", "charges", "amount", "spend", "cost", "billing"],
+        "tenure_months": ["tenure_months", "tenure", "months", "tenure_mo", "tenuremonths", "age_months", "subscription_length"],
+        "contract_type": ["contract_type", "contract", "contracttype", "plan_term", "term", "plan", "subscription_type"],
+        "payment_method": ["payment_method", "payment", "paymentmethod", "billing_method", "pay_method"],
+        "support_tickets_90d": ["support_tickets_90d", "support_tickets", "tickets", "tickets_90d", "support_cases", "cases", "tickets_count", "issues"],
+        "feature_adoption_rate": ["feature_adoption_rate", "feature_adoption", "adoption_rate", "adoption_pct", "adoption", "usage_rate"],
+        "late_payments_count": ["late_payments_count", "late_payments", "late_invoices", "unpaid_invoices", "overdue_invoices", "past_due"],
+        "nps_score": ["nps_score", "nps", "csat", "score", "rating", "satisfaction"],
+        "has_tech_support": ["has_tech_support", "tech_support", "support_tier", "dedicated_support", "premium_support"],
+        "usage_trend_pct": ["usage_trend_pct", "usage_trend", "usage_growth", "growth_pct", "trend", "usage_change"]
+    }
+    
+    for canonical, alias_list in aliases.items():
+        if canonical not in df.columns:
+            for alt in alias_list:
+                if alt in df.columns:
+                    df[canonical] = df[alt]
+                    break
+
+    if "customer_id" not in df.columns:
+        df["customer_id"] = [f"CUST-{i+1}" for i in range(len(df))]
+    if "company_name" not in df.columns:
+        df["company_name"] = [f"Account {df['customer_id'].iloc[i]}" for i in range(len(df))]
+        
+    if "monthly_charges" not in df.columns:
+        df["monthly_charges"] = 500.0
+    else:
+        df["monthly_charges"] = pd.to_numeric(df["monthly_charges"], errors="coerce").fillna(500.0).clip(lower=0)
+
+    if "tenure_months" not in df.columns:
+        df["tenure_months"] = 12
+    else:
+        df["tenure_months"] = pd.to_numeric(df["tenure_months"], errors="coerce").fillna(12).astype(int).clip(lower=0)
+
+    if "contract_type" not in df.columns:
+        df["contract_type"] = "One-Year"
+    else:
+        def norm_contract(c):
+            s = str(c).lower()
+            if "two" in s or "2" in s or "multi" in s:
+                return "Two-Year"
+            if "month" in s or "m2m" in s:
+                return "Month-to-Month"
+            return "One-Year"
+        df["contract_type"] = df["contract_type"].apply(norm_contract)
+
+    if "payment_method" not in df.columns:
+        df["payment_method"] = "Credit Card"
+    else:
+        def norm_payment(p):
+            s = str(p).lower()
+            if "check" in s:
+                return "Electronic Check"
+            if "bank" in s or "wire" in s or "ach" in s:
+                return "Bank Transfer"
+            if "manual" in s or "invoice" in s:
+                return "Manual Invoice"
+            return "Credit Card"
+        df["payment_method"] = df["payment_method"].apply(norm_payment)
+
+    if "support_tickets_90d" not in df.columns:
+        df["support_tickets_90d"] = 1
+    else:
+        df["support_tickets_90d"] = pd.to_numeric(df["support_tickets_90d"], errors="coerce").fillna(1).astype(int).clip(lower=0)
+
+    if "feature_adoption_rate" not in df.columns:
+        df["feature_adoption_rate"] = 65.0
+    else:
+        df["feature_adoption_rate"] = pd.to_numeric(df["feature_adoption_rate"], errors="coerce").fillna(65.0).clip(0, 100)
+
+    if "late_payments_count" not in df.columns:
+        df["late_payments_count"] = 0
+    else:
+        df["late_payments_count"] = pd.to_numeric(df["late_payments_count"], errors="coerce").fillna(0).astype(int).clip(lower=0)
+
+    if "nps_score" not in df.columns:
+        df["nps_score"] = 8
+    else:
+        df["nps_score"] = pd.to_numeric(df["nps_score"], errors="coerce").fillna(8).astype(int).clip(0, 10)
+
+    if "has_tech_support" not in df.columns:
+        df["has_tech_support"] = True
+    else:
+        def norm_tech(t):
+            s = str(t).lower()
+            return s in ["true", "1", "yes", "t", "y", "enrolled", "active"]
+        df["has_tech_support"] = df["has_tech_support"].apply(norm_tech)
+
+    if "usage_trend_pct" not in df.columns:
+        df["usage_trend_pct"] = 5.0
+    else:
+        df["usage_trend_pct"] = pd.to_numeric(df["usage_trend_pct"], errors="coerce").fillna(5.0)
+
+    return df
+
 def predict_batch_df(df: pd.DataFrame) -> Dict[str, Any]:
     model, preprocessor, metadata = get_artifacts()
     
-    # Ensure required columns
+    # Intelligently clean, normalize, and impute any user CSV format
+    cleaned_df = normalize_and_clean_batch_df(df).reset_index(drop=True)
+    
     required_cols = NUMERICAL_FEATURES + CATEGORICAL_FEATURES
-    missing = [c for c in required_cols if c not in df.columns]
-    if missing:
-        raise ValueError(f"Missing required columns in CSV: {missing}")
-        
-    transformed = preprocessor.transform(df[required_cols])
+    transformed = preprocessor.transform(cleaned_df[required_cols])
     probs = model.predict_proba(transformed)[:, 1] * 100.0
     
     results = []
-    for idx, row in df.iterrows():
-        p = round(float(probs[idx]), 1)
+    for i, row in cleaned_df.iterrows():
+        p = round(float(probs[i]), 1)
         if p < 25.0:
             tier = "Low"
             color = "#2E7D32"
@@ -368,20 +478,20 @@ def predict_batch_df(df: pd.DataFrame) -> Dict[str, Any]:
             tier = "Critical"
             color = "#C62828"
             
-        mrr = float(row.get("monthly_charges", 100.0))
+        mrr = float(row["monthly_charges"])
         at_risk = round(mrr * 12 * (p / 100.0), 2)
         
         results.append({
-            "customer_id": str(row.get("customer_id", f"CUST-{idx+1}")),
-            "company_name": str(row.get("company_name", f"Company {idx+1}")),
+            "customer_id": str(row["customer_id"]),
+            "company_name": str(row["company_name"]),
             "churn_probability": p,
             "risk_tier": tier,
             "risk_color": color,
             "monthly_charges": mrr,
             "revenue_at_risk": at_risk,
-            "contract_type": str(row.get("contract_type", "Month-to-Month")),
-            "support_tickets_90d": int(row.get("support_tickets_90d", 0)),
-            "nps_score": int(row.get("nps_score", 7))
+            "contract_type": str(row["contract_type"]),
+            "support_tickets_90d": int(row["support_tickets_90d"]),
+            "nps_score": int(row["nps_score"])
         })
         
     total = len(results)

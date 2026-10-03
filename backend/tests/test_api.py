@@ -310,4 +310,18 @@ def test_database_workspace_settings():
     assert get_res.json()["workspace_name"] == "Test HQ Labs"
 
 
-
+def test_predict_batch_arbitrary_csv():
+    # Test with arbitrary columns, aliases (MRR instead of monthly_charges, Client instead of company_name),
+    # missing columns (e.g. tenure, contract_type, tech_support omitted)
+    csv_content = """Client,MRR,Tickets,Rating\nAcme Corp,1200,4,3\nBeta LLC,450,0,9\nGamma Inc,3200,1,8\n"""
+    files = {"file": ("random_export.csv", csv_content.encode("utf-8"), "text/csv")}
+    response = client.post("/api/predict/batch", files=files, headers=DEMO_HEADERS)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_records"] == 3
+    assert len(data["predictions"]) == 3
+    # Check that alias MRR correctly populated monthly_charges
+    acme = next(p for p in data["predictions"] if "Acme" in p["company_name"])
+    assert acme["monthly_charges"] == 1200.0
+    assert acme["support_tickets_90d"] == 4
+    assert acme["nps_score"] == 3

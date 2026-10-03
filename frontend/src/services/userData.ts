@@ -135,12 +135,6 @@ export interface WorkspaceReviewAccount {
   isUserAdded?: boolean;
 }
 
-export const BENCHMARK_REVIEW_ACCOUNTS: WorkspaceReviewAccount[] = [
-  { id: 'AC-1024', name: 'Acme Corporation', reason: 'Renewal strategy', risk: 'High', owner: 'Success Team', time: '2h ago', mrr: 18400, riskScore: 72.8, suggestion: 'Executive value review' },
-  { id: 'BP-2048', name: 'Brightpath Health', reason: 'Support recovery plan', risk: 'Moderate', owner: 'Success Team', time: 'Yesterday', mrr: 12200, riskScore: 48.5, suggestion: 'Assign dedicated solutions engineer' },
-  { id: 'LC-3096', name: 'Lattice Cloud', reason: 'Expansion signal', risk: 'Low', owner: 'Success Team', time: 'Sep 19', mrr: 29500, riskScore: 19.2, suggestion: 'Review multi-year enterprise terms' }
-];
-
 export function loadReviewAccounts(userName?: string): WorkspaceReviewAccount[] {
   try {
     const raw = localStorage.getItem(LOCAL_REVIEW_ACCOUNTS_KEY);

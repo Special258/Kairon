@@ -66,43 +66,6 @@ const DEFAULT_PROFILE: CustomerProfile = {
   usage_trend_pct: 8
 };
 
-const SAMPLE_BENCHMARK_PROFILES: Array<{ label: string; profile: CustomerProfile }> = [
-  {
-    label: 'Meridian Tech (High Risk)',
-    profile: {
-      company_name: 'Meridian Tech',
-      customer_id: 'MT-402',
-      monthly_charges: 1250,
-      tenure_months: 6,
-      contract_type: 'Month-to-Month',
-      payment_method: 'Electronic Check',
-      support_tickets_90d: 5,
-      feature_adoption_rate: 34,
-      late_payments_count: 2,
-      nps_score: 4,
-      has_tech_support: false,
-      usage_trend_pct: -25
-    }
-  },
-  {
-    label: 'Apex Dynamics (Healthy Expansion)',
-    profile: {
-      company_name: 'Apex Dynamics',
-      customer_id: 'AD-809',
-      monthly_charges: 2400,
-      tenure_months: 30,
-      contract_type: 'Two-Year',
-      payment_method: 'Credit Card',
-      support_tickets_90d: 1,
-      feature_adoption_rate: 88,
-      late_payments_count: 0,
-      nps_score: 9,
-      has_tech_support: true,
-      usage_trend_pct: 22
-    }
-  }
-];
-
 const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }> = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'scorer', label: 'Account scorer', icon: Gauge },
@@ -780,10 +743,6 @@ function Scorer({
 }) {
   const set = (key: keyof CustomerProfile, value: CustomerProfile[keyof CustomerProfile]) => setProfile({ ...profile, [key]: value });
 
-  function loadSample(sample: CustomerProfile) {
-    setProfile({ ...sample });
-  }
-
   function handleReset() {
     setProfile({
       company_name: '',
@@ -815,24 +774,17 @@ function Scorer({
       <div className="scorer-toolbar">
         <div className="scorer-toolbar-info">
           <Sparkles size={16} color="var(--teal)" />
-          <span><b>Custom Account Evaluation:</b> Input your customer parameters or load a sample scenario.</span>
+          <span><b>Custom Account Evaluation:</b> Input customer parameters or calibrate metrics below to run real-time inference.</span>
         </div>
         <div className="scorer-toolbar-actions">
           <button
             type="button"
             className="secondary-button scorer-toolbar-btn"
-            onClick={() => loadSample(SAMPLE_BENCHMARK_PROFILES[0].profile)}
-            title="Load high-risk sample customer"
-          >
-            Load Sample Scenario
-          </button>
-          <button
-            type="button"
-            className="secondary-button scorer-toolbar-btn"
             onClick={handleReset}
-            title="Clear all fields to score a new customer"
+            title="Reset form fields to start scoring a new account"
           >
-            Clear / New Customer
+            <RotateCcw size={14} style={{ marginRight: 6 }} />
+            Reset / New Account
           </button>
         </div>
       </div>
