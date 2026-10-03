@@ -104,11 +104,14 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
 
     return response
 
-dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+static_build_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static_build"))
+frontend_dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+dist_dir = static_build_dir if os.path.isdir(static_build_dir) else frontend_dist_dir
 
 # Mount assets directory if dist exists
-if os.path.isdir(os.path.join(dist_dir, "assets")):
-    app.mount("/assets", StaticFiles(directory=os.path.join(dist_dir, "assets")), name="assets")
+assets_dir = os.path.join(dist_dir, "assets")
+if os.path.isdir(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 @app.get("/api/status")
 def api_status():
@@ -118,17 +121,33 @@ def api_status():
         "docs_url": "/docs"
     }
 
+@app.get("/favicon.ico")
+def favicon():
+    icon_path = os.path.join(dist_dir, "icon-192.svg")
+    if os.path.isfile(icon_path):
+        return FileResponse(icon_path, media_type="image/svg+xml")
+    return Response(status_code=204)
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    manifest_path = os.path.join(dist_dir, "manifest.webmanifest")
+    if os.path.isfile(manifest_path):
+        return FileResponse(manifest_path, media_type="application/manifest+json")
+    raise HTTPException(status_code=404)
+
 @app.api_route("/", methods=["GET", "HEAD"])
 def root(request: Request):
     if request.method == "HEAD":
         return Response(status_code=200)
+    index_path = os.path.join(dist_dir, "index.html")
+    if os.path.isfile(index_path) and "application/json" not in request.headers.get("accept", ""):
+        return FileResponse(index_path)
     if "application/json" in request.headers.get("accept", ""):
         return {
             "status": "online",
             "service": "Kairon ML Analytics API",
             "docs_url": "/docs"
         }
-    index_path = os.path.join(dist_dir, "index.html")
     if os.path.isfile(index_path):
         return FileResponse(index_path)
     return {
