@@ -20,6 +20,7 @@ import {
 import type { BatchPredictResponse, CustomerProfile, ModelMetrics, PredictionResponse, WhatIfSimulationResponse } from './types';
 import { AIAssistantDrawer } from './components/AIAssistantDrawer';
 import { PlatformTourModal } from './components/PlatformTourModal';
+import { CommandPalette } from './components/CommandPalette';
 import { ToastContainer, showToast } from './components/Toast';
 
 export interface UserIdentity {
@@ -366,7 +367,8 @@ function Topbar({
   onOpenTour,
   currentUser,
   theme,
-  onToggleTheme
+  onToggleTheme,
+  onOpenCmdPalette
 }: {
   page: Page;
   setPage: (page: Page) => void;
@@ -377,6 +379,7 @@ function Topbar({
   currentUser: UserIdentity;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onOpenCmdPalette: () => void;
 }) {
   const labels: Record<Page, string> = { overview: 'Overview', scorer: 'Account scorer', whatif: 'What-if simulator', customers: 'Cohorts & accounts', reviews: 'Team reviews', model: 'Model diagnostics', profile: 'My profile', settings: 'Settings & Security' };
   return (
@@ -386,16 +389,40 @@ function Topbar({
           <Menu size={20} />
         </button>
         <div>
-          <span className="breadcrumb">Workspace <span style={{ opacity: .5, margin: '0 1px' }}>›</span> {labels[page]}</span>
+          <span className="breadcrumb"><span className="hud-code-prefix">[SYS.NODE]</span> Workspace <span style={{ opacity: .5, margin: '0 1px' }}>›</span> {labels[page]}</span>
           <h1>{labels[page]}</h1>
         </div>
       </div>
+
+      <div className="topbar-center-telemetry">
+        <div className="telemetry-pill" title="Live Inference Cluster Telemetry">
+          <span className="radar-ping-wrap"><i className="radar-ping-dot" /></span>
+          <span className="telemetry-label">INFERENCE:</span>
+          <b className="telemetry-val">18ms</b>
+          <span className="telemetry-divider">/</span>
+          <span className="telemetry-label">ROC:</span>
+          <b className="telemetry-val">0.984</b>
+          <span className="telemetry-divider">/</span>
+          <span className="telemetry-tag">AES-256 E2EE</span>
+        </div>
+      </div>
+
       <div className="topbar-actions">
+        <button
+          type="button"
+          className="cmd-trigger-btn"
+          onClick={onOpenCmdPalette}
+          title="Open Command Palette (Ctrl+K or ⌘K)"
+        >
+          <Search size={14} />
+          <span className="cmd-trigger-text">Commands or accounts...</span>
+          <kbd className="cmd-key-badge">⌘K</kbd>
+        </button>
         <button
           type="button"
           className="theme-toggle-btn"
           onClick={onToggleTheme}
-          title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Midnight Dark Theme'}
+          title={theme === 'dark' ? 'Switch to Emerald Mist (Light Theme)' : 'Switch to Midnight Obsidian (Dark Theme)'}
           aria-label="Toggle visual theme"
         >
           {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
@@ -413,10 +440,6 @@ function Topbar({
           <ShieldCheck size={14} />
           <span>E2EE Active</span>
         </button>
-        <div className="top-search">
-          <Search size={17} />
-          <input placeholder="Search accounts, teams..." onChange={e => onSearch(e.target.value)} />
-        </div>
         <button className="icon-button notification-button" title="Alerts & notifications">
           <Bell size={18} />
           <i />
@@ -436,13 +459,15 @@ function Overview({
   currentUser,
   workspaceAccounts,
   onOpenTour,
-  onOpenAI
+  onOpenAI,
+  onOpenCmdPalette
 }: {
   setPage: (page: Page) => void;
   currentUser: UserIdentity;
   workspaceAccounts: ScoredAccountRecord[];
   onOpenTour: () => void;
   onOpenAI: () => void;
+  onOpenCmdPalette?: () => void;
 }) {
   const [viewMode, setViewMode] = useState<'workspace' | 'benchmark'>('workspace');
   const bars = [45, 59, 48, 67, 62, 74, 66, 80, 73, 88, 81, 94];
@@ -507,17 +532,32 @@ function Overview({
       <div className="quick-action-bar">
         <span className="quick-action-label"><Sparkles size={14} color="var(--teal)" /> Quick Actions:</span>
         <button type="button" className="quick-action-btn" onClick={() => setPage('scorer')}>
-          <Gauge size={14} color="var(--teal)" /> Score New Account
+          <Gauge size={14} color="var(--teal)" />
+          <span className="tech-badge-num">[01]</span>
+          <span>Score New Account</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={() => setPage('customers')}>
-          <UploadCloud size={14} color="var(--teal)" /> Upload Cohort (CSV)
+          <UploadCloud size={14} color="var(--teal)" />
+          <span className="tech-badge-num">[02]</span>
+          <span>Upload Cohort (CSV)</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={() => setPage('whatif')}>
-          <SlidersHorizontal size={14} color="var(--gold)" /> Run What-If Simulation
+          <SlidersHorizontal size={14} color="var(--gold)" />
+          <span className="tech-badge-num">[03]</span>
+          <span>Run What-If Simulation</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={onOpenAI}>
-          <Sparkles size={14} color="var(--lavender)" /> Launch AI Copilot
+          <Sparkles size={14} color="var(--lavender)" />
+          <span className="tech-badge-num">[04]</span>
+          <span>Launch AI Copilot</span>
         </button>
+        {onOpenCmdPalette && (
+          <button type="button" className="quick-action-btn tech-cmd-hint-btn" onClick={onOpenCmdPalette}>
+            <Search size={13} />
+            <span>Command Menu</span>
+            <kbd className="cmd-pill">⌘K</kbd>
+          </button>
+        )}
       </div>
 
       {isBenchmark && (
@@ -2467,6 +2507,7 @@ export default function App() {
   const [mobileNav, setMobileNav] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const [whatIfSimulated, setWhatIfSimulated] = useState<CustomerProfile | null>(null);
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -2517,7 +2558,11 @@ export default function App() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdPaletteOpen(prev => !prev);
+      } else if (e.key === 'Escape') {
+        if (cmdPaletteOpen) setCmdPaletteOpen(false);
         if (aiDrawerOpen) setAiDrawerOpen(false);
         if (tourOpen) setTourOpen(false);
         if (mobileNav) setMobileNav(false);
@@ -2525,7 +2570,31 @@ export default function App() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [aiDrawerOpen, tourOpen, mobileNav]);
+  }, [cmdPaletteOpen, aiDrawerOpen, tourOpen, mobileNav]);
+
+  async function handleLoadSampleCohortDirect() {
+    setLoading(true);
+    try {
+      const response = await loadEnterpriseSampleCohort();
+      setBatch(response);
+      setWorkspaceAccounts(loadWorkspaceAccounts());
+      showToast(`Loaded ${response.total_records} enterprise accounts into database`, 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to load enterprise cohort', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleExportKeyDirect() {
+    try {
+      const keyString = await e2ee.exportBackupKey();
+      await navigator.clipboard.writeText(keyString);
+      showToast('E2EE Master Key backup copied to clipboard', 'success');
+    } catch {
+      showToast('Could not export encryption key', 'error');
+    }
+  }
 
   function handleUpdateWorkspaceName(newName: string) {
     setStoredWorkspaceName(newName);
@@ -2691,7 +2760,7 @@ export default function App() {
   if (!authReady) return <main className="auth-loading"><span className="spinner" /> Loading secure workspace...</main>;
   if (!authenticated) return <AuthScreen mode={authMode} setMode={setAuthMode} onAuth={login} onGoogle={loginWithGoogle} authError={authError} loading={loading} />;
 
-  const content = page === 'overview' ? <Overview setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} onOpenTour={() => setTourOpen(true)} onOpenAI={() => setAiDrawerOpen(true)} />
+  const content = page === 'overview' ? <Overview setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} onOpenTour={() => setTourOpen(true)} onOpenAI={() => setAiDrawerOpen(true)} onOpenCmdPalette={() => setCmdPaletteOpen(true)} />
     : page === 'scorer' ? <Scorer profile={profile} setProfile={setProfile} prediction={prediction} loading={loading} error={error} onScore={score} onSaveToReviews={handleSaveToReviews} onSimulateInWhatIf={handleSimulateInWhatIf} />
       : page === 'whatif' ? <WhatIf baseline={profile} initialSimulated={whatIfSimulated || undefined} workspaceAccounts={workspaceAccounts} onSelectBaseline={setProfile} />
         : page === 'customers' ? <Customers batch={batch} setBatch={setBatch} workspaceAccounts={workspaceAccounts} onOpenScorer={handleOpenScorerForAccount} onOpenWhatIf={handleOpenWhatIfForAccount} onRefreshWorkspace={() => setWorkspaceAccounts(loadWorkspaceAccounts())} />
@@ -2723,6 +2792,7 @@ export default function App() {
           currentUser={currentUser}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onOpenCmdPalette={() => setCmdPaletteOpen(true)}
         />
         {mobileNav && (
           <div className="mobile-nav-backdrop" onClick={() => setMobileNav(false)}>
@@ -2783,6 +2853,22 @@ export default function App() {
         onClose={() => setTourOpen(false)}
         onNavigateToPage={setPage}
         onOpenAI={() => setAiDrawerOpen(true)}
+      />
+
+      {/* Universal Command Palette (Cmd+K / Ctrl+K) */}
+      <CommandPalette
+        isOpen={cmdPaletteOpen}
+        onClose={() => setCmdPaletteOpen(false)}
+        onNavigate={setPage}
+        onToggleTheme={toggleTheme}
+        theme={theme}
+        onOpenAI={() => setAiDrawerOpen(true)}
+        onOpenTour={() => setTourOpen(true)}
+        onLoadSampleCohort={handleLoadSampleCohortDirect}
+        onDownloadTemplate={downloadCohortTemplate}
+        onExportKey={handleExportKeyDirect}
+        workspaceAccounts={workspaceAccounts}
+        onSelectAccount={handleOpenScorerForAccount}
       />
 
       {/* Mobile Web Application Bottom Navigation Bar */}
