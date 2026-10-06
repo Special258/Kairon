@@ -5,7 +5,7 @@ import {
   Key, LayoutDashboard, LifeBuoy, LockKeyhole, LockKeyholeOpen, LogOut, Menu, MessageSquare,
   MoreHorizontal, PanelLeft, Pencil, Plus, RotateCcw, Search, Send, Settings, Shield,
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
-  UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers
+  UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers, Moon, Sun
 } from 'lucide-react';
 import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV, loadEnterpriseSampleCohort, downloadCohortTemplate } from './services/api';
 import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
@@ -364,7 +364,9 @@ function Topbar({
   onSearch,
   onOpenAI,
   onOpenTour,
-  currentUser
+  currentUser,
+  theme,
+  onToggleTheme
 }: {
   page: Page;
   setPage: (page: Page) => void;
@@ -373,6 +375,8 @@ function Topbar({
   onOpenAI: () => void;
   onOpenTour: () => void;
   currentUser: UserIdentity;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }) {
   const labels: Record<Page, string> = { overview: 'Overview', scorer: 'Account scorer', whatif: 'What-if simulator', customers: 'Cohorts & accounts', reviews: 'Team reviews', model: 'Model diagnostics', profile: 'My profile', settings: 'Settings & Security' };
   return (
@@ -387,6 +391,15 @@ function Topbar({
         </div>
       </div>
       <div className="topbar-actions">
+        <button
+          type="button"
+          className="theme-toggle-btn"
+          onClick={onToggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Midnight Dark Theme'}
+          aria-label="Toggle visual theme"
+        >
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
         <button className="tour-topbar-btn" onClick={onOpenTour} title="Platform Tour & Architecture Slides">
           <Layers size={14} />
           <span>Platform Slides</span>
@@ -489,6 +502,22 @@ function Overview({
             <Plus size={17} /> Score an account
           </button>
         </div>
+      </div>
+
+      <div className="quick-action-bar">
+        <span className="quick-action-label"><Sparkles size={14} color="var(--teal)" /> Quick Actions:</span>
+        <button type="button" className="quick-action-btn" onClick={() => setPage('scorer')}>
+          <Gauge size={14} color="var(--teal)" /> Score New Account
+        </button>
+        <button type="button" className="quick-action-btn" onClick={() => setPage('customers')}>
+          <UploadCloud size={14} color="var(--teal)" /> Upload Cohort (CSV)
+        </button>
+        <button type="button" className="quick-action-btn" onClick={() => setPage('whatif')}>
+          <SlidersHorizontal size={14} color="var(--gold)" /> Run What-If Simulation
+        </button>
+        <button type="button" className="quick-action-btn" onClick={onOpenAI}>
+          <Sparkles size={14} color="var(--lavender)" /> Launch AI Copilot
+        </button>
       </div>
 
       {isBenchmark && (
@@ -1460,6 +1489,8 @@ function Customers({
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
+  const [tierFilter, setTierFilter] = useState<'All' | 'Critical' | 'High' | 'Moderate' | 'Low'>('All');
+  const [wsTierFilter, setWsTierFilter] = useState<'All' | 'Critical' | 'High' | 'Moderate' | 'Low'>('All');
 
   function sanitizeCsvCell(val: any): string {
     const str = String(val ?? '').replace(/"/g, '""');
@@ -1519,7 +1550,17 @@ function Customers({
     showToast('Cohort exported to CSV (formula-injection protected)', 'info');
   }
 
-  const rows = batch?.predictions.filter(row => `${row.company_name} ${row.customer_id}`.toLowerCase().includes(query.toLowerCase())) || [];
+  const rows = (batch?.predictions || []).filter(row => {
+    const matchesQuery = `${row.company_name} ${row.customer_id}`.toLowerCase().includes(query.toLowerCase());
+    const matchesTier = tierFilter === 'All' || row.risk_tier === tierFilter;
+    return matchesQuery && matchesTier;
+  });
+
+  const filteredWsAccounts = workspaceAccounts.filter(acc => {
+    const matchesQuery = `${acc.company_name} ${acc.customer_id}`.toLowerCase().includes(query.toLowerCase());
+    const matchesTier = wsTierFilter === 'All' || acc.risk_tier === wsTierFilter;
+    return matchesQuery && matchesTier;
+  });
 
   return (
     <div className="page-content customers-page">
@@ -1575,12 +1616,36 @@ function Customers({
               <div className="table-toolbar">
                 <div>
                   <span className="eyebrow">Workspace Scored Accounts</span>
-                  <h3>{workspaceAccounts.length} custom customer{workspaceAccounts.length > 1 ? 's' : ''} in your workspace</h3>
+                  <h3>{filteredWsAccounts.length} of {workspaceAccounts.length} customer{workspaceAccounts.length > 1 ? 's' : ''}</h3>
                 </div>
                 <div className="table-actions">
+                  <div className="table-search">
+                    <Search size={15} />
+                    <input placeholder="Search workspace accounts..." value={query} onChange={e => setQuery(e.target.value)} />
+                  </div>
                   <button className="primary-button" style={{ fontSize: '13px' }} onClick={() => onOpenScorer()}><Plus size={15} /> Score another account</button>
                 </div>
               </div>
+
+              <div className="tier-filter-chips" style={{ padding: '0 24px' }}>
+                {(['All', 'Critical', 'High', 'Moderate', 'Low'] as const).map(tier => {
+                  const count = tier === 'All'
+                    ? workspaceAccounts.length
+                    : workspaceAccounts.filter(a => a.risk_tier === tier).length;
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      className={`tier-chip ${tier.toLowerCase()} ${wsTierFilter === tier ? 'active' : ''}`}
+                      onClick={() => setWsTierFilter(tier)}
+                    >
+                      <span>{tier === 'All' ? 'All Accounts' : `${tier} Risk`}</span>
+                      <b className="chip-count">{count}</b>
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="data-table-wrap">
                 <table>
                   <thead>
@@ -1594,7 +1659,7 @@ function Customers({
                     </tr>
                   </thead>
                   <tbody>
-                    {workspaceAccounts.map(acc => (
+                    {filteredWsAccounts.map(acc => (
                       <tr key={acc.id}>
                         <td>
                           <div className="account-cell">
@@ -1635,13 +1700,32 @@ function Customers({
             <div className="table-toolbar">
               <div>
                 <span className="eyebrow">Scored cohort</span>
-                <h3>{batch.total_records.toLocaleString()} account signals</h3>
+                <h3>{rows.length} of {batch.total_records.toLocaleString()} account signals</h3>
               </div>
               <div className="table-actions">
                 <div className="table-search"><Search size={15} /><input placeholder="Search accounts..." value={query} onChange={e => setQuery(e.target.value)} /></div>
                 <button className="secondary-button" onClick={handleExportCohort}><Download size={15} /> Export CSV</button>
                 <button className="secondary-button" onClick={() => setBatch(null)}><RotateCcw size={15} /> Upload another cohort</button>
               </div>
+            </div>
+
+            <div className="tier-filter-chips" style={{ padding: '0 24px' }}>
+              {(['All', 'Critical', 'High', 'Moderate', 'Low'] as const).map(tier => {
+                const count = tier === 'All'
+                  ? batch.predictions.length
+                  : batch.predictions.filter(p => p.risk_tier === tier).length;
+                return (
+                  <button
+                    key={tier}
+                    type="button"
+                    className={`tier-chip ${tier.toLowerCase()} ${tierFilter === tier ? 'active' : ''}`}
+                    onClick={() => setTierFilter(tier)}
+                  >
+                    <span>{tier === 'All' ? 'All Signals' : `${tier} Risk`}</span>
+                    <b className="chip-count">{count}</b>
+                  </button>
+                );
+              })}
             </div>
             <div className="data-table-wrap">
               <table>
@@ -2106,10 +2190,14 @@ function ToggleSetting({ label, detail, checked, onChange }: { label: string; de
 
 function SettingsPage({
   currentUser,
-  onUpdateWorkspaceName
+  onUpdateWorkspaceName,
+  theme,
+  onToggleTheme
 }: {
   currentUser: UserIdentity;
   onUpdateWorkspaceName: (newName: string) => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }) {
   const [tab, setTab] = useState<'workspace' | 'notifications' | 'security' | 'integrations'>('workspace');
   const [workspaceInput, setWorkspaceInput] = useState(currentUser.workspaceName);
@@ -2152,7 +2240,7 @@ function SettingsPage({
         <div>
           <span className="eyebrow">Enterprise trust & workspace preferences</span>
           <h2>Settings & Security</h2>
-          <p>Shape workspace parameters, end-to-end encryption keys, and defensive security controls.</p>
+          <p>Shape workspace parameters, visual themes, end-to-end encryption keys, and defensive security controls.</p>
         </div>
         <button className="primary-button" onClick={() => setSaved(true)}>
           {saved ? <><Check size={16} /> Preferences saved</> : 'Save changes'}
@@ -2161,7 +2249,7 @@ function SettingsPage({
 
       <div className="settings-layout">
         <nav className="settings-nav">
-          <button className={tab === 'workspace' ? 'active' : ''} onClick={() => setTab('workspace')}><UserRound size={16} /> Workspace</button>
+          <button className={tab === 'workspace' ? 'active' : ''} onClick={() => setTab('workspace')}><UserRound size={16} /> Workspace & Theme</button>
           <button className={tab === 'security' ? 'active' : ''} onClick={() => setTab('security')}><ShieldCheck size={16} /> Security & E2EE</button>
           <button className={tab === 'notifications' ? 'active' : ''} onClick={() => setTab('notifications')}><Bell size={16} /> Notifications</button>
           <button className={tab === 'integrations' ? 'active' : ''} onClick={() => setTab('integrations')}><Zap size={16} /> Integrations</button>
@@ -2185,6 +2273,54 @@ function SettingsPage({
               <button className="primary-button" onClick={handleSaveWorkspace} style={{ marginTop: '12px', alignSelf: 'flex-start' }}>
                 {wsSaved ? <><Check size={16} /> Workspace updated</> : 'Save workspace name'}
               </button>
+
+              <div style={{ marginTop: '28px', paddingTop: '22px', borderTop: '1px solid var(--line)' }}>
+                <span className="eyebrow">Appearance & Visual Style</span>
+                <h3 style={{ marginTop: '6px' }}>Interface Theme</h3>
+                <p>Choose your visual atmosphere for high-focus relationship monitoring.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px', marginTop: '14px' }}>
+                  <div
+                    onClick={() => theme !== 'dark' && onToggleTheme()}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: `2px solid ${theme === 'dark' ? 'var(--teal)' : 'var(--line)'}`,
+                      background: '#111916',
+                      color: '#f2f7f5',
+                      cursor: 'pointer',
+                      boxShadow: theme === 'dark' ? '0 0 16px var(--teal-glow)' : 'none',
+                      transition: 'all .2s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <Moon size={18} color="var(--teal)" />
+                      {theme === 'dark' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
+                    </div>
+                    <b>Midnight Obsidian</b>
+                    <p style={{ fontSize: '11px', color: '#7d968d', marginTop: '4px' }}>Ultra-sleek OLED dark mode with glowing emerald accents.</p>
+                  </div>
+                  <div
+                    onClick={() => theme !== 'light' && onToggleTheme()}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: `2px solid ${theme === 'light' ? 'var(--teal)' : 'var(--line)'}`,
+                      background: '#ffffff',
+                      color: '#11201b',
+                      cursor: 'pointer',
+                      boxShadow: theme === 'light' ? '0 0 16px var(--teal-glow)' : 'none',
+                      transition: 'all .2s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <Sun size={18} color="var(--gold)" />
+                      {theme === 'light' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
+                    </div>
+                    <b>Emerald Mist</b>
+                    <p style={{ fontSize: '11px', color: '#6a7f76', marginTop: '4px' }}>Refined, clean editorial day aesthetic.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -2332,6 +2468,19 @@ export default function App() {
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const [whatIfSimulated, setWhatIfSimulated] = useState<CustomerProfile | null>(null);
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('kairon_theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'dark'; // high-contrast sleek midnight dark mode default
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('kairon_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   const [currentUser, setCurrentUser] = useState<UserIdentity>(() => {
     const demo = getDemoUser();
@@ -2549,10 +2698,10 @@ export default function App() {
           : page === 'reviews' ? <Reviews currentUser={currentUser} accounts={reviewAccounts} setAccounts={setReviewAccounts} setPage={setPage} />
             : page === 'model' ? <ModelDiagnostics batch={batch} workspaceAccounts={workspaceAccounts} setPage={setPage} />
               : page === 'profile' ? <Profile setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} />
-                : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} />;
+                : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} theme={theme} onToggleTheme={toggleTheme} />;
 
   return (
-    <div className="product-app">
+    <div className="product-app" data-theme={theme}>
       <Sidebar
         page={page}
         setPage={setPage}
@@ -2572,6 +2721,8 @@ export default function App() {
           onOpenAI={() => setAiDrawerOpen(true)}
           onOpenTour={() => setTourOpen(true)}
           currentUser={currentUser}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
         {mobileNav && (
           <div className="mobile-nav-backdrop" onClick={() => setMobileNav(false)}>
