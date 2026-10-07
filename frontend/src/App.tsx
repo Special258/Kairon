@@ -150,20 +150,16 @@ function AuthScreen({
             <div><b>03</b><span>Act, review, and protect revenue</span></div>
           </div>
         </div>
-        <div className="story-orbit liquid-glass-stage">
-          <div className="liquid-glass-art-wrap">
-            <img src="/assets/liquid_glass_core.webp" alt="Liquid Glass Core" className="liquid-glass-art" />
-            <div className="liquid-glass-glow-overlay" />
-          </div>
+        <div className="story-orbit">
           <div className="orbit-ring ring-one" />
           <div className="orbit-ring ring-two" />
-          <div className="orbit-core liquid-glass-orb">
+          <div className="orbit-core">
             <Target size={28} />
             <span>92.4%</span>
             <small>health confidence</small>
           </div>
-          <div className="orbit-note note-one liquid-glass-pill"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
-          <div className="orbit-note note-two liquid-glass-pill"><ShieldCheck size={14} /> 847 accounts protected</div>
+          <div className="orbit-note note-one"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
+          <div className="orbit-note note-two"><ShieldCheck size={14} /> 847 accounts protected</div>
         </div>
         <div className="story-footer">
           <span>Trusted by customer teams who put relationships first.</span>
@@ -575,24 +571,6 @@ function Overview({
           <button className="primary-button" onClick={() => setPage('scorer')}>
             <Plus size={17} /> Score an account
           </button>
-        </div>
-      </div>
-
-      <div className="liquid-glass-banner">
-        <div className="liquid-glass-banner-media">
-          <img src="/assets/liquid_ribbon_flow.webp" alt="Liquid Telemetry Stream" className="liquid-banner-img" />
-          <div className="liquid-banner-gradient-mask" />
-        </div>
-        <div className="liquid-banner-content">
-          <div className="liquid-banner-badge">
-            <span className="liquid-dot-pulse" />
-            <span>NEURAL RETENTION TELEMETRY</span>
-            <span className="liquid-badge-sub">• LIQUID FLOW ACTIVE</span>
-          </div>
-          <h3 className="liquid-glass-heading">Continuous Customer Risk & Momentum Intelligence</h3>
-          <p>
-            Real-time behavioral vectors monitoring churn signals, MRR exposure, and proactive intervention playbooks across your customer base.
-          </p>
         </div>
       </div>
 
@@ -2422,8 +2400,8 @@ function SettingsPage({
                       padding: '16px',
                       borderRadius: '12px',
                       border: `2px solid ${theme === 'dark' ? 'var(--teal)' : 'var(--line)'}`,
-                      background: '#111916',
-                      color: '#f2f7f5',
+                      background: 'var(--paper)',
+                      color: 'var(--ink)',
                       cursor: 'pointer',
                       boxShadow: theme === 'dark' ? '0 0 16px var(--teal-glow)' : 'none',
                       transition: 'all .2s ease'
@@ -2433,8 +2411,8 @@ function SettingsPage({
                       <Moon size={18} color="var(--teal)" />
                       {theme === 'dark' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Midnight Obsidian</b>
-                    <p style={{ fontSize: '11px', color: '#7d968d', marginTop: '4px' }}>Ultra-sleek OLED dark mode with glowing emerald accents.</p>
+                    <b>Celestial Aurora Twilight</b>
+                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Luminous iOS 27 liquid glass aurora with vibrant iris, rose, and amber refraction.</p>
                   </div>
                   <div
                     onClick={() => theme !== 'light' && onToggleTheme()}
@@ -2442,8 +2420,8 @@ function SettingsPage({
                       padding: '16px',
                       borderRadius: '12px',
                       border: `2px solid ${theme === 'light' ? 'var(--teal)' : 'var(--line)'}`,
-                      background: '#ffffff',
-                      color: '#11201b',
+                      background: 'var(--paper-elevated)',
+                      color: 'var(--ink)',
                       cursor: 'pointer',
                       boxShadow: theme === 'light' ? '0 0 16px var(--teal-glow)' : 'none',
                       transition: 'all .2s ease'
@@ -2453,8 +2431,8 @@ function SettingsPage({
                       <Sun size={18} color="var(--gold)" />
                       {theme === 'light' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Emerald Mist</b>
-                    <p style={{ fontSize: '11px', color: '#6a7f76', marginTop: '4px' }}>Refined, clean editorial day aesthetic.</p>
+                    <b>Prismatic Pearl Glass</b>
+                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Radiant iridescent frosted day aesthetic with optical chromatic caustics.</p>
                   </div>
                 </div>
               </div>
