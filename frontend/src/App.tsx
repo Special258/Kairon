@@ -8,7 +8,7 @@ import {
   UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers, Moon, Sun
 } from 'lucide-react';
 import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV, loadEnterpriseSampleCohort, downloadCohortTemplate } from './services/api';
-import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
+import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, getStoredCustomUsername, setStoredCustomUsername, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
 import { e2ee } from './services/e2ee';
 import {
   loadReviewNotes, addReviewNote, type ReviewNoteData,
@@ -34,10 +34,14 @@ export interface UserIdentity {
 
 export function makeUserIdentity(name?: string, email?: string, workspaceName?: string): UserIdentity {
   const cleanEmail = email?.trim() || 'lead@workspace.io';
-  const cleanName = name?.trim() || parseNameFromEmail(cleanEmail);
+  const customSaved = getStoredCustomUsername();
+  const cleanName = name?.trim() || customSaved || parseNameFromEmail(cleanEmail);
   const cleanWs = (workspaceName?.trim()) || localStorage.getItem('kairon_workspace_name') || inferWorkspaceName(cleanName, cleanEmail);
   if (workspaceName && workspaceName.trim()) {
     setStoredWorkspaceName(workspaceName.trim());
+  }
+  if (name && name.trim()) {
+    setStoredCustomUsername(name.trim());
   }
   return {
     name: cleanName,
@@ -108,8 +112,8 @@ function AuthScreen({
   authError: string | null;
   loading: boolean;
 }) {
-  const [name, setName] = useState('');
-  const [workspaceName, setWorkspaceName] = useState('');
+  const [name, setName] = useState(() => getStoredCustomUsername() || '');
+  const [workspaceName, setWorkspaceName] = useState(() => getStoredWorkspaceName() || '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -117,7 +121,10 @@ function AuthScreen({
   function submit(event: FormEvent) {
     event.preventDefault();
     const cleanEmail = email.trim() || 'lead@workspace.io';
-    const cleanName = name.trim() || parseNameFromEmail(cleanEmail);
+    const cleanName = name.trim() || getStoredCustomUsername() || parseNameFromEmail(cleanEmail);
+    if (cleanName) {
+      setStoredCustomUsername(cleanName);
+    }
     void onAuth(mode, cleanName, cleanEmail, password, workspaceName.trim());
   }
   function continueWithGoogle() { void onGoogle(); }
@@ -190,21 +197,25 @@ function AuthScreen({
               <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => setMode('signup')}>Create account</button>
             </div>
             <form className="auth-form" onSubmit={submit}>
+              <label>
+                Username / Display name
+                <input
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Jal Patel"
+                  autoComplete="name"
+                />
+              </label>
               {mode === 'signup' && (
-                <>
-                  <label>
-                    Full name
-                    <input required value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" />
-                  </label>
-                  <label>
-                    Workspace / Organization name
-                    <input
-                      value={workspaceName}
-                      onChange={e => setWorkspaceName(e.target.value)}
-                      placeholder="e.g. Acme Corp or Patel Dynamics"
-                    />
-                  </label>
-                </>
+                <label>
+                  Workspace / Organization name
+                  <input
+                    value={workspaceName}
+                    onChange={e => setWorkspaceName(e.target.value)}
+                    placeholder="e.g. Acme Corp or Patel Dynamics"
+                  />
+                </label>
               )}
               <label>
                 Work email
@@ -503,7 +514,7 @@ function Overview({
       <div className="page-intro">
         <div>
           <span className="eyebrow">{currentUser.workspaceName} • Intelligence Dashboard</span>
-          <h2>Good morning, {firstName} <span>*</span></h2>
+          <h2>Good morning, {currentUser.name || 'Leader'} <span>*</span></h2>
           <p>Here is the pulse of your customer relationships today.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -582,7 +593,7 @@ function Overview({
             <span className="onboarding-ws-tag">{currentUser.workspaceName}</span>
           </div>
           <div className="onboarding-guide-body">
-            <h3>Welcome to your intelligence hub, {firstName}!</h3>
+            <h3>Welcome to your intelligence hub, {currentUser.name || firstName}!</h3>
             <p>Your workspace starts clean with 0 pre-baked accounts. For new workspaces, customer data is populated by your inputs. Follow the steps below to start monitoring retention:</p>
             <div className="onboarding-steps-grid">
               <div className="onboarding-step-box" onClick={() => setPage('scorer')}>
@@ -2231,17 +2242,21 @@ function ToggleSetting({ label, detail, checked, onChange }: { label: string; de
 function SettingsPage({
   currentUser,
   onUpdateWorkspaceName,
+  onUpdateUsername,
   theme,
   onToggleTheme
 }: {
   currentUser: UserIdentity;
   onUpdateWorkspaceName: (newName: string) => void;
+  onUpdateUsername: (newName: string) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
 }) {
   const [tab, setTab] = useState<'workspace' | 'notifications' | 'security' | 'integrations'>('workspace');
   const [workspaceInput, setWorkspaceInput] = useState(currentUser.workspaceName);
+  const [usernameInput, setUsernameInput] = useState(currentUser.name);
   const [wsSaved, setWsSaved] = useState(false);
+  const [userSaved, setUserSaved] = useState(false);
   const [saved, setSaved] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
@@ -2260,6 +2275,14 @@ function SettingsPage({
     setWsSaved(true);
     showToast('Workspace name updated successfully', 'success');
     setTimeout(() => setWsSaved(false), 2500);
+  }
+
+  function handleSaveUsername() {
+    if (!usernameInput.trim()) return;
+    onUpdateUsername(usernameInput.trim());
+    setUserSaved(true);
+    showToast('Display username updated successfully', 'success');
+    setTimeout(() => setUserSaved(false), 2500);
   }
 
   async function handleExportKey() {
@@ -2298,6 +2321,21 @@ function SettingsPage({
         <section className="panel settings-panel">
           {tab === 'workspace' && (
             <div className="settings-section">
+              <span className="eyebrow">Your identity</span>
+              <h3>{currentUser.name}</h3>
+              <p>Your username appears in dashboard greetings, team reviews, and enterprise reports.</p>
+              <label>
+                Username / Display name
+                <input
+                  value={usernameInput}
+                  onChange={e => setUsernameInput(e.target.value)}
+                  placeholder="e.g. Jal Patel"
+                />
+              </label>
+              <button className="primary-button" onClick={handleSaveUsername} style={{ marginTop: '8px', marginBottom: '24px', alignSelf: 'flex-start' }}>
+                {userSaved ? <><Check size={16} /> Username updated</> : 'Save username'}
+              </button>
+
               <span className="eyebrow">Workspace profile</span>
               <h3>{currentUser.workspaceName}</h3>
               <p>These details appear in reports, team review queues, and AI resolutions.</p>
@@ -2605,11 +2643,21 @@ export default function App() {
     }));
   }
 
+  function handleUpdateUsername(newName: string) {
+    if (!newName.trim()) return;
+    setStoredCustomUsername(newName.trim());
+    setCurrentUser(prev => ({
+      ...prev,
+      name: newName.trim(),
+      initials: getInitials(newName.trim())
+    }));
+  }
+
   async function login(mode: AuthMode, name: string, email: string, password: string, workspaceName?: string) {
     setLoading(true);
     setAuthError(null);
     try {
-      const session = mode === 'signin' ? await signInWithPassword(email, password) : await signUpWithPassword(email, password, name);
+      const session = mode === 'signin' ? await signInWithPassword(email, password, name) : await signUpWithPassword(email, password, name);
       const userIdent = makeUserIdentity(name, email, workspaceName);
       setCurrentUser(userIdent);
       setAuthenticated(Boolean(session));
@@ -2767,7 +2815,7 @@ export default function App() {
           : page === 'reviews' ? <Reviews currentUser={currentUser} accounts={reviewAccounts} setAccounts={setReviewAccounts} setPage={setPage} />
             : page === 'model' ? <ModelDiagnostics batch={batch} workspaceAccounts={workspaceAccounts} setPage={setPage} />
               : page === 'profile' ? <Profile setPage={setPage} currentUser={currentUser} workspaceAccounts={workspaceAccounts} />
-                : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} theme={theme} onToggleTheme={toggleTheme} />;
+                : <SettingsPage currentUser={currentUser} onUpdateWorkspaceName={handleUpdateWorkspaceName} onUpdateUsername={handleUpdateUsername} theme={theme} onToggleTheme={toggleTheme} />;
 
   return (
     <div className="product-app" data-theme={theme}>

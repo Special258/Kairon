@@ -48,6 +48,24 @@ export function parseNameFromEmail(email: string): string {
     .join(' ') || 'Workspace Member';
 }
 
+const CUSTOM_USERNAME_KEY = 'kairon_custom_username';
+
+export function getStoredCustomUsername(): string | null {
+  return localStorage.getItem(CUSTOM_USERNAME_KEY);
+}
+
+export function setStoredCustomUsername(username: string): void {
+  if (username && username.trim()) {
+    localStorage.setItem(CUSTOM_USERNAME_KEY, username.trim());
+    const existing = getSessionUser();
+    if (existing) {
+      existing.name = username.trim();
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(existing));
+    }
+    window.dispatchEvent(new CustomEvent('kairon-auth-change'));
+  }
+}
+
 export function getInitials(name: string): string {
   const parts = (name || '').trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
@@ -58,7 +76,11 @@ export function getInitials(name: string): string {
 
 export function saveLocalSession(name?: string, email?: string) {
   const cleanEmail = email?.trim() || 'member@workspace.io';
-  const cleanName = name?.trim() || parseNameFromEmail(cleanEmail);
+  const customSaved = getStoredCustomUsername();
+  const cleanName = name?.trim() || customSaved || parseNameFromEmail(cleanEmail);
+  if (name?.trim()) {
+    localStorage.setItem(CUSTOM_USERNAME_KEY, name.trim());
+  }
   const user: SessionUser = {
     id: 'user-' + Date.now().toString(36),
     email: cleanEmail,
@@ -73,10 +95,11 @@ export function saveLocalSession(name?: string, email?: string) {
 
 export const signInDemo = saveLocalSession;
 
-
 export async function getAuthSession(): Promise<Session | null> {
   const demo = getDemoUser();
+  const customSaved = getStoredCustomUsername();
   if (demo) {
+    const effectiveName = customSaved || demo.name;
     return {
       access_token: 'local-session-token',
       token_type: 'bearer',
@@ -85,7 +108,7 @@ export async function getAuthSession(): Promise<Session | null> {
       user: {
         id: demo.id,
         app_metadata: {},
-        user_metadata: { full_name: demo.name, role: demo.role },
+        user_metadata: { full_name: effectiveName, role: demo.role },
         aud: 'authenticated',
         created_at: new Date().toISOString(),
         email: demo.email
@@ -95,6 +118,12 @@ export async function getAuthSession(): Promise<Session | null> {
   if (!supabase) return null;
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
+  if (data.session?.user && customSaved) {
+    data.session.user.user_metadata = {
+      ...data.session.user.user_metadata,
+      full_name: customSaved
+    };
+  }
   return data.session;
 }
 
@@ -138,15 +167,23 @@ export function createLocalSession(name?: string, email?: string): Session {
   } as unknown as Session;
 }
 
-export async function signInWithPassword(email: string, password: string): Promise<Session | null> {
+export async function signInWithPassword(email: string, password: string, customUsername?: string): Promise<Session | null> {
   const cleanEmail = email.trim();
-  const inferredName = parseNameFromEmail(cleanEmail);
+  const explicitName = customUsername?.trim() || getStoredCustomUsername() || parseNameFromEmail(cleanEmail);
+  if (customUsername?.trim()) {
+    localStorage.setItem(CUSTOM_USERNAME_KEY, customUsername.trim());
+  }
   if (!supabase) {
-    return createLocalSession(inferredName, cleanEmail);
+    return createLocalSession(explicitName, cleanEmail);
   }
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (!error && data?.session) {
+      if (customUsername?.trim()) {
+        try {
+          await supabase.auth.updateUser({ data: { full_name: customUsername.trim() } });
+        } catch {}
+      }
       localStorage.removeItem(LOCAL_SESSION_KEY);
       localStorage.removeItem(LEGACY_DEMO_KEY);
       return data.session;
@@ -156,12 +193,15 @@ export async function signInWithPassword(email: string, password: string): Promi
     console.warn('Supabase sign-in network error, falling back to local enterprise session:', err);
   }
 
-  return createLocalSession(inferredName, cleanEmail);
+  return createLocalSession(explicitName, cleanEmail);
 }
 
 export async function signUpWithPassword(email: string, password: string, name: string): Promise<Session | null> {
   const cleanEmail = email.trim();
-  const cleanName = name.trim() || parseNameFromEmail(cleanEmail);
+  const cleanName = name.trim() || getStoredCustomUsername() || parseNameFromEmail(cleanEmail);
+  if (name.trim()) {
+    localStorage.setItem(CUSTOM_USERNAME_KEY, name.trim());
+  }
   if (!supabase) {
     return createLocalSession(cleanName, cleanEmail);
   }
