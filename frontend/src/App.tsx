@@ -88,9 +88,9 @@ const formatMoney = (value: number) => `$${Math.round(value).toLocaleString()}`;
 function Logo() {
   return (
     <div className="logo-lockup">
-      <div className="logo-mark"><Activity size={18} strokeWidth={2.5} /></div>
+      <div className="logo-mark liquid-glass-mark"><Activity size={18} strokeWidth={2.5} /></div>
       <div className="logo-text">
-        <strong>kairon</strong>
+        <strong className="brand-name-glass">kairon</strong>
         <small>relationship intelligence</small>
       </div>
     </div>
@@ -150,16 +150,20 @@ function AuthScreen({
             <div><b>03</b><span>Act, review, and protect revenue</span></div>
           </div>
         </div>
-        <div className="story-orbit">
+        <div className="story-orbit liquid-glass-stage">
+          <div className="liquid-glass-art-wrap">
+            <img src="/assets/liquid_glass_core.webp" alt="Liquid Glass Core" className="liquid-glass-art" />
+            <div className="liquid-glass-glow-overlay" />
+          </div>
           <div className="orbit-ring ring-one" />
           <div className="orbit-ring ring-two" />
-          <div className="orbit-core">
-            <Target size={30} />
+          <div className="orbit-core liquid-glass-orb">
+            <Target size={28} />
             <span>92.4%</span>
             <small>health confidence</small>
           </div>
-          <div className="orbit-note note-one"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
-          <div className="orbit-note note-two"><ShieldCheck size={14} /> 847 accounts protected</div>
+          <div className="orbit-note note-one liquid-glass-pill"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
+          <div className="orbit-note note-two liquid-glass-pill"><ShieldCheck size={14} /> 847 accounts protected</div>
         </div>
         <div className="story-footer">
           <span>Trusted by customer teams who put relationships first.</span>
@@ -193,7 +197,7 @@ function AuthScreen({
 
             <div className="auth-heading">
               <span className="eyebrow">{mode === 'signin' ? `${timeMsg.tag} • Real-Time Auth` : 'Start with your customer base'}</span>
-              <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
+              <h2>{mode === 'signin' ? <span className="liquid-glass-text">{timeMsg.heading}</span> : <span className="liquid-glass-text">Create your workspace</span>}</h2>
               <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the relationships that matter.'}</p>
             </div>
             <div className="auth-realtime-loc-banner">
@@ -216,7 +220,7 @@ function AuthScreen({
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Jal Patel"
+                  placeholder="e.g. Alex Vance"
                   autoComplete="name"
                 />
               </label>
@@ -226,7 +230,7 @@ function AuthScreen({
                   <input
                     value={workspaceName}
                     onChange={e => setWorkspaceName(e.target.value)}
-                    placeholder="e.g. Acme Corp or Patel Dynamics"
+                    placeholder="e.g. Acme Corp or Northstar Cloud"
                   />
                 </label>
               )}
@@ -548,7 +552,7 @@ function Overview({
               <span className="auth-period-tag">{periodLabel}</span>
             </span>
           </div>
-          <h2>{greeting} <span>*</span></h2>
+          <h2><span className="liquid-glass-text">{greeting}</span> <span>*</span></h2>
           <p className="auth-dynamic-tagline">{authTagline}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -571,6 +575,24 @@ function Overview({
           <button className="primary-button" onClick={() => setPage('scorer')}>
             <Plus size={17} /> Score an account
           </button>
+        </div>
+      </div>
+
+      <div className="liquid-glass-banner">
+        <div className="liquid-glass-banner-media">
+          <img src="/assets/liquid_ribbon_flow.webp" alt="Liquid Telemetry Stream" className="liquid-banner-img" />
+          <div className="liquid-banner-gradient-mask" />
+        </div>
+        <div className="liquid-banner-content">
+          <div className="liquid-banner-badge">
+            <span className="liquid-dot-pulse" />
+            <span>NEURAL RETENTION TELEMETRY</span>
+            <span className="liquid-badge-sub">• LIQUID FLOW ACTIVE</span>
+          </div>
+          <h3 className="liquid-glass-heading">Continuous Customer Risk & Momentum Intelligence</h3>
+          <p>
+            Real-time behavioral vectors monitoring churn signals, MRR exposure, and proactive intervention playbooks across your customer base.
+          </p>
         </div>
       </div>
 
@@ -2366,7 +2388,7 @@ function SettingsPage({
                 <input
                   value={usernameInput}
                   onChange={e => setUsernameInput(e.target.value)}
-                  placeholder="e.g. Jal Patel"
+                  placeholder="e.g. Alex Vance"
                 />
               </label>
               <button className="primary-button" onClick={handleSaveUsername} style={{ marginTop: '8px', marginBottom: '24px', alignSelf: 'flex-start' }}>
@@ -2381,7 +2403,7 @@ function SettingsPage({
                 <input
                   value={workspaceInput}
                   onChange={e => setWorkspaceInput(e.target.value)}
-                  placeholder="e.g. Acme Corp or Patel Dynamics"
+                  placeholder="e.g. Acme Corp or Northstar Cloud"
                 />
               </label>
               <label>Default currency<select defaultValue="USD"><option>USD - US Dollar</option><option>EUR - Euro</option><option>GBP - Pound Sterling</option></select></label>
