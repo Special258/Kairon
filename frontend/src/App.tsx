@@ -2612,16 +2612,30 @@ export default function App() {
   const [batch, setBatch] = useState<BatchPredictResponse | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+    const safetyTimer = window.setTimeout(() => {
+      if (mounted) setAuthReady(true);
+    }, 400);
+
     getAuthSession().then(session => {
+      if (!mounted) return;
       setAuthenticated(Boolean(session));
       if (session?.user) {
         const name = (session.user.user_metadata?.full_name as string) || '';
         const email = session.user.email || '';
         setCurrentUser(makeUserIdentity(name, email));
       }
-    }).catch(authError => setAuthError(authError.message)).finally(() => setAuthReady(true));
+    }).catch(authErr => {
+      console.warn('Initial auth check notice:', authErr);
+    }).finally(() => {
+      if (mounted) {
+        window.clearTimeout(safetyTimer);
+        setAuthReady(true);
+      }
+    });
 
-    return subscribeToAuthState(session => {
+    const unsubscribe = subscribeToAuthState(session => {
+      if (!mounted) return;
       setAuthenticated(Boolean(session));
       if (session?.user) {
         const name = (session.user.user_metadata?.full_name as string) || '';
@@ -2629,6 +2643,12 @@ export default function App() {
         setCurrentUser(makeUserIdentity(name, email));
       }
     });
+
+    return () => {
+      mounted = false;
+      window.clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

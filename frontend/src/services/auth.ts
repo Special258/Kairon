@@ -116,15 +116,27 @@ export async function getAuthSession(): Promise<Session | null> {
     } as unknown as Session;
   }
   if (!supabase) return null;
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  if (data.session?.user && customSaved) {
-    data.session.user.user_metadata = {
-      ...data.session.user.user_metadata,
-      full_name: customSaved
-    };
+  try {
+    const sessionPromise = supabase.auth.getSession().then(({ data, error }) => {
+      if (error) throw error;
+      if (data.session?.user && customSaved) {
+        data.session.user.user_metadata = {
+          ...data.session.user.user_metadata,
+          full_name: customSaved
+        };
+      }
+      return data.session;
+    });
+
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 800);
+    });
+
+    return await Promise.race([sessionPromise, timeoutPromise]);
+  } catch (err) {
+    console.warn('Supabase session initialization skipped (offline/unreachable):', err);
+    return null;
   }
-  return data.session;
 }
 
 export function subscribeToAuthState(onSessionChange: (session: Session | null) => void) {
