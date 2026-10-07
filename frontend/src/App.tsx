@@ -5,7 +5,8 @@ import {
   Key, LayoutDashboard, LifeBuoy, LockKeyhole, LockKeyholeOpen, LogOut, Menu, MessageSquare,
   MoreHorizontal, PanelLeft, Pencil, Plus, RotateCcw, Search, Send, Settings, Shield,
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
-  UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers, Moon, Sun
+  UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers, Moon, Sun,
+  Globe, MapPin
 } from 'lucide-react';
 import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV, loadEnterpriseSampleCohort, downloadCohortTemplate } from './services/api';
 import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, getStoredCustomUsername, setStoredCustomUsername, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
@@ -22,6 +23,7 @@ import { AIAssistantDrawer } from './components/AIAssistantDrawer';
 import { PlatformTourModal } from './components/PlatformTourModal';
 import { CommandPalette } from './components/CommandPalette';
 import { ToastContainer, showToast } from './components/Toast';
+import { getUserLocationAndTime, getAppropriateGreeting, getRealtimeAuthTagline, getAuthScreenTimeMessage } from './utils/geoTime';
 
 export interface UserIdentity {
   name: string;
@@ -117,6 +119,8 @@ function AuthScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const timeMsg = getAuthScreenTimeMessage();
+  const locInfo = getUserLocationAndTime();
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -188,9 +192,18 @@ function AuthScreen({
             </div>
 
             <div className="auth-heading">
-              <span className="eyebrow">{mode === 'signin' ? 'Welcome back' : 'Start with your customer base'}</span>
-              <h2>{mode === 'signin' ? 'Sign in to your workspace' : 'Create your workspace'}</h2>
-              <p>{mode === 'signin' ? 'Pick up where your team left off.' : 'A clearer way to protect the relationships that matter.'}</p>
+              <span className="eyebrow">{mode === 'signin' ? `${timeMsg.tag} • Real-Time Auth` : 'Start with your customer base'}</span>
+              <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
+              <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the relationships that matter.'}</p>
+            </div>
+            <div className="auth-realtime-loc-banner">
+              <span className="auth-loc-dot" />
+              <ShieldCheck size={13} className="auth-shield-icon" />
+              <span>Location: <strong>{locInfo.city}</strong></span>
+              <span className="auth-loc-sep">•</span>
+              <span>{locInfo.timezoneLong} ({locInfo.timezoneShort})</span>
+              <span className="auth-loc-sep">•</span>
+              <span className="auth-loc-clock">{locInfo.localTimeString}</span>
             </div>
             <div className="auth-switch">
               <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => setMode('signin')}>Sign in</button>
@@ -482,7 +495,16 @@ function Overview({
 }) {
   const [viewMode, setViewMode] = useState<'workspace' | 'benchmark'>('workspace');
   const bars = [45, 59, 48, 67, 62, 74, 66, 80, 73, 88, 81, 94];
-  const firstName = currentUser.name.split(' ')[0] || 'Leader';
+  const [locInfo, setLocInfo] = useState(() => getUserLocationAndTime());
+  const { greeting, periodLabel } = getAppropriateGreeting(currentUser.name);
+  const authTagline = getRealtimeAuthTagline(currentUser.workspaceName);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLocInfo(getUserLocationAndTime());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const hasAccounts = workspaceAccounts.length > 0;
   const isBenchmark = viewMode === 'benchmark';
@@ -513,9 +535,21 @@ function Overview({
     <div className="page-content overview-page">
       <div className="page-intro">
         <div>
-          <span className="eyebrow">{currentUser.workspaceName} • Intelligence Dashboard</span>
-          <h2>Good morning, {currentUser.name || 'Leader'} <span>*</span></h2>
-          <p>Here is the pulse of your customer relationships today.</p>
+          <div className="auth-session-eyebrow-row">
+            <span className="eyebrow">{currentUser.workspaceName} • Intelligence Dashboard</span>
+            <span className="auth-location-badge" title={`Real-time authenticated from ${locInfo.city} (${locInfo.timezoneLong})`}>
+              <span className="radar-ping-dot" />
+              <ShieldCheck size={12} className="auth-shield-icon" />
+              <span className="auth-loc-city">{locInfo.city}</span>
+              <span className="auth-loc-sep">•</span>
+              <span className="auth-loc-tz">{locInfo.timezoneShort}</span>
+              <span className="auth-loc-sep">•</span>
+              <span className="auth-loc-time">{locInfo.localTimeString}</span>
+              <span className="auth-period-tag">{periodLabel}</span>
+            </span>
+          </div>
+          <h2>{greeting} <span>*</span></h2>
+          <p className="auth-dynamic-tagline">{authTagline}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div className="portfolio-view-switch">
@@ -593,7 +627,7 @@ function Overview({
             <span className="onboarding-ws-tag">{currentUser.workspaceName}</span>
           </div>
           <div className="onboarding-guide-body">
-            <h3>Welcome to your intelligence hub, {currentUser.name || firstName}!</h3>
+            <h3>Welcome to your intelligence hub, {currentUser.name || 'Leader'}!</h3>
             <p>Your workspace starts clean with 0 pre-baked accounts. For new workspaces, customer data is populated by your inputs. Follow the steps below to start monitoring retention:</p>
             <div className="onboarding-steps-grid">
               <div className="onboarding-step-box" onClick={() => setPage('scorer')}>
@@ -2171,6 +2205,8 @@ function Profile({
   currentUser: UserIdentity;
   workspaceAccounts: ScoredAccountRecord[];
 }) {
+  const locInfo = getUserLocationAndTime();
+
   return (
     <div className="page-content profile-page">
       <div className="page-intro compact">
@@ -2210,7 +2246,8 @@ function Profile({
             <div><span>Work email</span><b>{currentUser.email}</b></div>
             <div><span>Workspace</span><b>{currentUser.workspaceName}</b></div>
             <div><span>Role</span><b>{currentUser.role}</b></div>
-            <div><span>Timezone</span><b>GMT +05:30 | India Standard Time</b></div>
+            <div><span>Timezone</span><b>{locInfo.timezoneShort} ({locInfo.utcOffset}) | {locInfo.timezoneLong}</b></div>
+            <div><span>Detected Region</span><b>{locInfo.city} • Verified E2EE</b></div>
           </div>
         </section>
         <section className="panel detail-panel">
