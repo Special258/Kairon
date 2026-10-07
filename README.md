@@ -195,16 +195,9 @@ All 20 pytest test suites run against the backend application with 100% pass rat
 
 ---
 
-# 👨‍💻 Author & Developer
+# 👥 Open Source & Maintenance
 
-**Jal Patel**
-
-🎓 B.Tech Computer Science Engineering  
-🤖 Artificial Intelligence & Data Science  
-🏫 Parul University  
-
-[![GitHub](https://img.shields.io/badge/GitHub-Special258-181717?style=for-the-badge&logo=github)](https://github.com/Special258)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Jal%20Patel-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/jalpatel-dataai)
+Kairon is an open-source Customer Relationship Intelligence & Retention Platform distributed under the [MIT License](LICENSE). Contributions, issues, and feature requests are welcome!
 
 ---
 

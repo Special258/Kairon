@@ -11,8 +11,7 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:5173,http://127.0.0.1:80,http://127.0.0.1:5173
-      - SUPABASE_URL=${SUPABASE_URL:-https://your-project.supabase.co}
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/api/health" ]
       interval: 15s

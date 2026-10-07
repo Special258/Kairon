@@ -32,7 +32,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_AUTH_PROVIDER
-        value: supabase
+        value: local
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
