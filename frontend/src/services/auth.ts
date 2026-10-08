@@ -24,7 +24,19 @@ export type DemoUser = SessionUser;
 export function getSessionUser(): SessionUser | null {
   try {
     const raw = localStorage.getItem(LOCAL_SESSION_KEY) || localStorage.getItem(LEGACY_DEMO_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (raw) return JSON.parse(raw);
+    const explicitlyLoggedOut = localStorage.getItem('kairon_explicit_logout') === 'true';
+    if (!explicitlyLoggedOut) {
+      const defaultUser: SessionUser = {
+        id: 'user-default-1',
+        email: 'alex.vance@northstar.io',
+        name: getStoredCustomUsername() || 'Alex Vance',
+        role: 'Customer Success Lead'
+      };
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(defaultUser));
+      return defaultUser;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -75,6 +87,7 @@ export function getInitials(name: string): string {
 }
 
 export function saveLocalSession(name?: string, email?: string) {
+  localStorage.removeItem('kairon_explicit_logout');
   const cleanEmail = email?.trim() || 'member@workspace.io';
   const customSaved = getStoredCustomUsername();
   const cleanName = name?.trim() || customSaved || parseNameFromEmail(cleanEmail);
@@ -252,6 +265,7 @@ export async function signInWithGoogle(): Promise<void> {
 }
 
 export async function signOutUser() {
+  localStorage.setItem('kairon_explicit_logout', 'true');
   localStorage.removeItem(LOCAL_SESSION_KEY);
   localStorage.removeItem(LEGACY_DEMO_KEY);
   window.dispatchEvent(new CustomEvent('kairon-auth-change'));

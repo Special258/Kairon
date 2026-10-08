@@ -3,7 +3,7 @@ import {
   Activity, AlertTriangle, ArrowRight, BarChart3, Bell, Check, CircleHelp, Clock3,
   DollarSign, Download, Eye, EyeOff, FileSpreadsheet, FlaskConical, Gauge, HeartHandshake,
   Key, LayoutDashboard, LifeBuoy, LockKeyhole, LockKeyholeOpen, LogOut, Menu, MessageSquare,
-  MoreHorizontal, PanelLeft, Pencil, Play, Plus, RotateCcw, Search, Send, Settings, Shield,
+  MoreHorizontal, PanelLeft, Pencil, Plus, RotateCcw, Search, Send, Settings, Shield,
   ShieldCheck, SlidersHorizontal, Sparkles, Target, TrendingDown, TrendingUp,
   UploadCloud, UserRound, Users, X, Zap, ChevronDown, Layers, Moon, Sun,
   Globe, MapPin
@@ -88,16 +88,28 @@ const formatMoney = (value: number) => `$${Math.round(value).toLocaleString()}`;
 function Logo() {
   return (
     <div className="logo-lockup">
-      <div className="logo-sprout-mark">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 20h10" />
-          <path d="M10 20c5.5-2.5.8-6.4 3-13" />
-          <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4-.1 5.5.8z" />
-          <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.4 1.7-4.6-2.7.2-4.1.9-4.9 2z" />
+      <div className="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="kaironGrad" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#06b6d4" />
+              <stop offset="0.55" stopColor="#10b981" />
+              <stop offset="1" stopColor="#3b82f6" />
+            </linearGradient>
+            <filter id="kaironGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#06b6d4" floodOpacity="0.4" />
+            </filter>
+          </defs>
+          <polygon points="14,2 25,8.5 25,21.5 14,28 3,21.5 3,8.5" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinejoin="round" fill="rgba(6, 182, 212, 0.08)" filter="url(#kaironGlow)" />
+          <circle cx="14" cy="14" r="3.2" fill="url(#kaironGrad)" />
+          <line x1="14" y1="2" x2="14" y2="10.8" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
+          <line x1="25" y1="21.5" x2="16.8" y2="16.2" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
+          <line x1="3" y1="21.5" x2="11.2" y2="16.2" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       </div>
       <div className="logo-text">
-        <strong className="brand-name-arth">KAIRON</strong>
+        <strong className="brand-name">KAIRON</strong>
+        <small className="brand-tagline">RETENTION INTELLIGENCE</small>
       </div>
     </div>
   );
@@ -120,12 +132,6 @@ function AuthScreen({
   authError: string | null;
   loading: boolean;
 }) {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [previewTab, setPreviewTab] = useState<'scorer' | 'whatif' | 'ai' | 'cohorts'>('scorer');
-  const [simLeverTenure, setSimLeverTenure] = useState(24);
-  const [simLeverTechSupport, setSimLeverTechSupport] = useState(true);
-
   const [name, setName] = useState(() => getStoredCustomUsername() || '');
   const [workspaceName, setWorkspaceName] = useState(() => getStoredWorkspaceName() || '');
   const [email, setEmail] = useState('');
@@ -143,217 +149,109 @@ function AuthScreen({
     }
     void onAuth(mode, cleanName, cleanEmail, password, workspaceName.trim());
   }
-
-  function handleQuickAccess() {
-    const cleanEmail = email.trim() || 'lead@workspace.io';
-    const cleanName = name.trim() || getStoredCustomUsername() || 'Alex Vance';
-    void onAuth('signin', cleanName, cleanEmail, password || 'demo123', workspaceName.trim() || 'Northstar Enterprise');
-  }
-
   function continueWithGoogle() { void onGoogle(); }
 
   return (
-    <main className="arth-hero-wrap">
-      {/* 1. Floating Pinned Pill Top Navbar */}
-      <header className="arth-nav-pill">
-        <div className="arth-nav-left">
+    <main className="auth-page">
+      <section className="auth-story">
+        <div className="auth-story-top">
           <Logo />
+          <span className="status-pill"><i /> Model engine live</span>
         </div>
-        <nav className="arth-nav-center" aria-label="Landing Navigation">
-          <button type="button" className="arth-nav-link" onClick={() => setPreviewModalOpen(true)}>Solutions</button>
-          <button type="button" className="arth-nav-link" onClick={() => { setPreviewTab('scorer'); setPreviewModalOpen(true); }}>Scorer</button>
-          <button type="button" className="arth-nav-link" onClick={() => { setPreviewTab('whatif'); setPreviewModalOpen(true); }}>What-If Sandbox</button>
-          <button type="button" className="arth-nav-link" onClick={() => { setPreviewTab('cohorts'); setPreviewModalOpen(true); }}>Insights</button>
-          <button type="button" className="arth-nav-link" onClick={() => setAuthModalOpen(true)}>About Platform</button>
-        </nav>
-        <div className="arth-nav-right">
-          <button
-            type="button"
-            className="arth-login-pill-btn"
-            onClick={() => { setMode('signin'); setAuthModalOpen(true); }}
-            title="Sign into Kairon workspace"
-          >
-            <LockKeyhole size={13} />
-            <span>Login</span>
-          </button>
-          <button
-            type="button"
-            className="arth-access-pill-btn"
-            onClick={handleQuickAccess}
-            title="Access Kairon Enterprise Platform"
-          >
-            <span>Access Platform</span>
-          </button>
+        <div className="story-copy">
+          <span className="eyebrow"><Sparkles size={14} /> retention intelligence, made human</span>
+          <h1>See the signal.<br /><em>Keep the relationship.</em></h1>
+          <p>Kairon helps customer teams see which relationships need attention, understand why risk is rising, and choose the next best action before a renewal becomes a rescue mission.</p>
+          <div className="story-steps">
+            <div><b>01</b><span>Connect your customer signals</span></div>
+            <div><b>02</b><span>Understand health and churn risk</span></div>
+            <div><b>03</b><span>Act, review, and protect revenue</span></div>
+          </div>
         </div>
-      </header>
-
-      {/* 2. Hero Stage (Left Content + Right Floating Glass Telemetry Cards) */}
-      <div className="arth-hero-stage">
-        {/* Left Column: Editorial Headline & Actions */}
-        <div className="arth-hero-left">
-          <div className="arth-eyebrow-pill">
-            <Sparkles size={13} className="arth-eyebrow-sparkle" />
-            <span>ENTERPRISE AI CUSTOMER RETENTION ENGINE</span>
+        <div className="story-orbit">
+          <div className="orbit-ring ring-one" />
+          <div className="orbit-ring ring-two" />
+          <div className="orbit-core">
+            <Target size={30} />
+            <span>92.4%</span>
+            <small>health confidence</small>
           </div>
-
-          <h1 className="arth-hero-headline">
-            Where relationships<br />
-            takes root.
-          </h1>
-
-          <p className="arth-hero-subtext">
-            Churn generates weather, not answers. Kairon combines deep neural forecasting
-            with verified telemetry, relationship velocity, and contract health fundamentals so
-            every retention thesis is backed by empirical data.
-          </p>
-
-          <div className="arth-hero-cta-row">
-            <button
-              type="button"
-              className="arth-cta-primary"
-              onClick={handleQuickAccess}
-            >
-              <span>Step Into Platform</span>
-              <ArrowRight size={17} />
-            </button>
-            <button
-              type="button"
-              className="arth-cta-secondary"
-              onClick={() => setPreviewModalOpen(true)}
-            >
-              <Play size={14} fill="currentColor" />
-              <span>Interactive Model Preview</span>
-            </button>
+          <div className="orbit-note note-one"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
+          <div className="orbit-note note-two"><ShieldCheck size={14} /> 847 accounts protected</div>
+        </div>
+        <div className="story-footer">
+          <span>Trusted by customer teams who put relationships first.</span>
+        </div>
+      </section>
+      <section className="auth-panel">
+        <div className="auth-panel-top">
+          <div className="auth-security-tag">
+            <ShieldCheck size={14} />
+            <span>Zero-Knowledge E2EE</span>
           </div>
-
-          <div className="arth-hero-telemetry-row">
-            <span className="arth-telemetry-item">
-              <span className="arth-telemetry-dot" />
-              <span>Rooted in Real-Time Telemetry</span>
-            </span>
-            <span className="arth-telemetry-item">
-              <span className="arth-telemetry-dot" />
-              <span>Sub-15ms AI Prediction Latency</span>
-            </span>
-            <span className="arth-telemetry-item">
-              <ShieldCheck size={13} color="#22c55e" />
-              <span>Zero-Knowledge AES-256</span>
-            </span>
+          <div className="auth-status-indicator">
+            <i className="status-live-dot" />
+            <span>System Operational</span>
           </div>
         </div>
 
-        {/* Right Column: Floating Overlaid Glass Telemetry Cards Over Landscape */}
-        <div className="arth-hero-right">
-          {/* Card 1: Top Right AI Confidence Score */}
-          <div className="arth-floating-card card-confidence">
-            <div className="card-top-header">
-              <div className="card-label-row">
-                <span className="card-sprout-dot">🌱</span>
-                <span className="card-eyebrow-label">AI CONFIDENCE SCORE</span>
-              </div>
-              <span className="card-verified-tag">VERIFIED</span>
-            </div>
-            <div className="card-big-stat">
-              <span className="card-number">94.2%</span>
-            </div>
-            <p className="card-footer-desc">
-              Calibrated against 3,500 enterprise accounts with ROC-AUC 0.984 validation.
-            </p>
-          </div>
+        <div className="auth-panel-inner">
+          <div className="mobile-auth-logo"><Logo /></div>
 
-          {/* Card 2: Bottom Floating Forecast Card */}
-          <div className="arth-floating-card card-forecast">
-            <div className="card-top-header">
-              <div className="card-label-row">
-                <TrendingUp size={14} color="#38bdf8" />
-                <span className="card-eyebrow-label">30-DAY RETENTION FORECAST</span>
-              </div>
-            </div>
-            <div className="card-big-stat">
-              <span className="card-number positive">+18.6%</span>
-            </div>
-            <p className="card-footer-desc">
-              Target churn mitigation corridor backed by active intervention playbooks.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Floating Interactive Credentials Access Modal */}
-      {authModalOpen && (
-        <div className="arth-modal-backdrop" onClick={() => setAuthModalOpen(false)}>
-          <div className="arth-modal-card" onClick={e => e.stopPropagation()}>
-            <div className="arth-modal-head">
-              <div className="arth-modal-title-row">
-                <Logo />
-                <button
-                  type="button"
-                  className="arth-modal-close-btn"
-                  onClick={() => setAuthModalOpen(false)}
-                  aria-label="Close modal"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="arth-modal-sub">
-                <span>{mode === 'signin' ? `${timeMsg.tag} • Real-time Session` : 'Create your workspace'}</span>
-                <span className="arth-modal-loc-pill">
-                  <ShieldCheck size={12} color="#22c55e" /> {locInfo.city} • {locInfo.localTimeString}
-                </span>
-              </div>
+          <div className="auth-card">
+            <div className="auth-card-top-pill">
+              <span className="auth-pill-badge">
+                <Sparkles size={13} />
+                <span>Enterprise Portal</span>
+              </span>
+              <span className="auth-encryption-label">
+                <LockKeyhole size={11} /> 256-bit AES
+              </span>
             </div>
 
-            <div className="arth-auth-switch-pill">
-              <button
-                type="button"
-                className={mode === 'signin' ? 'active' : ''}
-                onClick={() => setMode('signin')}
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                className={mode === 'signup' ? 'active' : ''}
-                onClick={() => setMode('signup')}
-              >
-                Create account
-              </button>
+            <div className="auth-heading">
+              <span className="eyebrow">{mode === 'signin' ? `${timeMsg.tag} • Real-Time Auth` : 'Start with your customer base'}</span>
+              <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
+              <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the relationships that matter.'}</p>
             </div>
-
-            <form className="arth-auth-form" onSubmit={submit}>
+            <div className="auth-realtime-loc-banner">
+              <span className="auth-loc-dot" />
+              <ShieldCheck size={13} className="auth-shield-icon" />
+              <span>Location: <strong>{locInfo.city}</strong></span>
+              <span className="auth-loc-sep">•</span>
+              <span>{locInfo.timezoneLong} ({locInfo.timezoneShort})</span>
+              <span className="auth-loc-sep">•</span>
+              <span className="auth-loc-clock">{locInfo.localTimeString}</span>
+            </div>
+            <div className="auth-switch">
+              <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => setMode('signin')}>Sign in</button>
+              <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => setMode('signup')}>Create account</button>
+            </div>
+            <form className="auth-form" onSubmit={submit}>
               <label>
                 Username / Display name
                 <input
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Alex Vance"
+                  placeholder="e.g. Jal Patel"
                   autoComplete="name"
                 />
               </label>
-
               {mode === 'signup' && (
                 <label>
                   Workspace / Organization name
                   <input
                     value={workspaceName}
                     onChange={e => setWorkspaceName(e.target.value)}
-                    placeholder="e.g. Northstar Cloud"
+                    placeholder="e.g. Acme Corp or Patel Dynamics"
                   />
                 </label>
               )}
-
               <label>
                 Work email
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="alex@company.com"
-                />
+                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
               </label>
-
               <label>
                 Password
                 <div className="input-with-icon">
@@ -362,205 +260,71 @@ function AuthScreen({
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="Enter account password"
+                    placeholder="Enter your password"
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                   />
                   <button
                     type="button"
-                    className="password-toggle-btn"
+                    className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
                     onClick={() => setShowPassword(prev => !prev)}
                     title={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <LockKeyholeOpen size={16} /> : <LockKeyhole size={16} />}
+                    {showPassword ? (
+                      <LockKeyholeOpen size={16} className="lock-icon open-anim" />
+                    ) : (
+                      <LockKeyhole size={16} className="lock-icon lock-anim" />
+                    )}
                   </button>
                 </div>
               </label>
-
-              <button type="submit" className="arth-modal-submit-btn" disabled={loading}>
-                {loading ? 'Entering platform...' : mode === 'signin' ? 'Step Into Platform →' : 'Create Workspace →'}
+              {mode === 'signin' && (
+                <div className="form-meta">
+                  <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
+                  <button type="button" className="text-button">Forgot password?</button>
+                </div>
+              )}
+              <button className="primary-button auth-submit" disabled={loading}>
+                {loading ? 'Entering workspace...' : mode === 'signin' ? 'Enter workspace' : 'Create workspace'} <ArrowRight size={17} />
               </button>
             </form>
 
-            <div className="arth-divider"><span>or continue with</span></div>
-
+            <div className="auth-divider"><span>or continue with</span></div>
             <button
               type="button"
-              className="arth-sso-btn"
+              className="secondary-button sso-button"
               onClick={continueWithGoogle}
               disabled={loading}
             >
-              <span className="google-dot">G</span> {loading ? 'Connecting...' : 'Continue with Google'}
+              <span className="google-dot">G</span> {loading ? 'Connecting securely...' : 'Continue with Google'}
             </button>
-
-            {authError && <p className="auth-error">{authError}</p>}
+            <button
+              type="button"
+              className="demo-direct-button"
+              onClick={() => {
+                const cleanEmail = email.trim() || 'alex.vance@northstar.io';
+                const cleanName = name.trim() || getStoredCustomUsername() || 'Alex Vance';
+                void onAuth('signin', cleanName, cleanEmail, 'demo123', workspaceName.trim() || 'Northstar Enterprise');
+              }}
+              disabled={loading}
+              title="Launch Kairon Enterprise Demo Workspace with 1 click"
+            >
+              <Zap size={15} /> <span>Instant Demo Workspace Access →</span>
+            </button>
+            {authError && <p className="auth-error" role="alert">{authError}</p>}
           </div>
+
+          <p className="auth-legal">By continuing, you agree to our <a>Terms of service</a> and <a>Privacy policy</a>.</p>
         </div>
-      )}
 
-      {/* 4. Godly-Inspired Interactive Model Preview Showcase Modal */}
-      {previewModalOpen && (
-        <div className="arth-modal-backdrop" onClick={() => setPreviewModalOpen(false)}>
-          <div className="arth-preview-modal-card" onClick={e => e.stopPropagation()}>
-            <div className="preview-modal-header">
-              <div className="preview-badge-row">
-                <span className="preview-spark-badge"><Sparkles size={14} /> LIVE MODEL PREVIEW</span>
-                <span className="preview-ver-tag">ENGINE v1.0.0</span>
-              </div>
-              <button
-                type="button"
-                className="arth-modal-close-btn"
-                onClick={() => setPreviewModalOpen(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="preview-modal-tabs">
-              <button
-                type="button"
-                className={previewTab === 'scorer' ? 'active' : ''}
-                onClick={() => setPreviewTab('scorer')}
-              >
-                <Gauge size={15} /> 01 Churn Predictor
-              </button>
-              <button
-                type="button"
-                className={previewTab === 'whatif' ? 'active' : ''}
-                onClick={() => setPreviewTab('whatif')}
-              >
-                <SlidersHorizontal size={15} /> 02 What-If Sandbox
-              </button>
-              <button
-                type="button"
-                className={previewTab === 'ai' ? 'active' : ''}
-                onClick={() => setPreviewTab('ai')}
-              >
-                <Sparkles size={15} /> 03 AI Copilot
-              </button>
-              <button
-                type="button"
-                className={previewTab === 'cohorts' ? 'active' : ''}
-                onClick={() => setPreviewTab('cohorts')}
-              >
-                <Users size={15} /> 04 Cohort Telemetry
-              </button>
-            </div>
-
-            <div className="preview-tab-body">
-              {previewTab === 'scorer' && (
-                <div className="preview-scorer-view">
-                  <div className="preview-scorer-stat-box">
-                    <div className="stat-ring-preview">
-                      <span className="preview-percent">14.2%</span>
-                      <small>CHURN RISK</small>
-                    </div>
-                    <div className="stat-desc-preview">
-                      <h4>Healthy Enterprise Corridor</h4>
-                      <p>Top Drivers: Long-term annual commitment (-18%), high feature adoption 72% (-12%), support tickets resolved &lt; 24h.</p>
-                      <span className="risk-pill-low">LOW RISK • $5,040 MRR SAFE</span>
-                    </div>
-                  </div>
-                  <div className="preview-driver-bars">
-                    <div className="driver-bar-item">
-                      <span>Contract Commitment (One-Year)</span>
-                      <div className="bar-track"><div className="bar-fill green" style={{ width: '75%' }} /></div>
-                      <b>-18.0%</b>
-                    </div>
-                    <div className="driver-bar-item">
-                      <span>Feature Adoption Rate (68%)</span>
-                      <div className="bar-track"><div className="bar-fill green" style={{ width: '62%' }} /></div>
-                      <b>-12.4%</b>
-                    </div>
-                    <div className="driver-bar-item">
-                      <span>Support Escalations (2 tickets)</span>
-                      <div className="bar-track"><div className="bar-fill amber" style={{ width: '28%' }} /></div>
-                      <b>+4.5%</b>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {previewTab === 'whatif' && (
-                <div className="preview-whatif-view">
-                  <div className="whatif-levers-panel">
-                    <div className="lever-control">
-                      <label>Contract Tenure: <b>{simLeverTenure} Months</b></label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="48"
-                        value={simLeverTenure}
-                        onChange={e => setSimLeverTenure(Number(e.target.value))}
-                      />
-                    </div>
-                    <div className="lever-control">
-                      <label>Dedicated Technical Support</label>
-                      <button
-                        type="button"
-                        className={`toggle-lever-btn ${simLeverTechSupport ? 'active' : ''}`}
-                        onClick={() => setSimLeverTechSupport(!simLeverTechSupport)}
-                      >
-                        {simLeverTechSupport ? 'Enrolled (Active)' : 'None (Vulnerable)'}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="whatif-result-preview">
-                    <div className="whatif-delta-badge">
-                      <TrendingDown size={18} />
-                      <span>-{(simLeverTenure > 12 ? 24.5 : 8.2) + (simLeverTechSupport ? 12.0 : 0)}% Risk Reduction</span>
-                    </div>
-                    <p>Protected Revenue: <b>${Math.round(4200 * (simLeverTenure / 12) * 1.5).toLocaleString()}</b> per renewal cycle</p>
-                  </div>
-                </div>
-              )}
-
-              {previewTab === 'ai' && (
-                <div className="preview-ai-view">
-                  <div className="ai-chat-bubble ai">
-                    <div className="ai-bubble-head"><Sparkles size={14} color="#22c55e" /> Kairon AI Problem Resolution Engine</div>
-                    <p>“Diagnosed risk elevation on Northstar Account: Executive sponsor departure detected prior to Q4 renewal. Initiating 3-step relationship rescue playbook with automated executive ROI briefing deck.”</p>
-                  </div>
-                  <div className="ai-playbook-steps">
-                    <div>1. Schedule Executive Alignment Session with incoming VP</div>
-                    <div>2. Deliver 1-Page Outcomes Summary & Historical Milestones</div>
-                    <div>3. Assign Enterprise Support Engineer for Architecture Walkthrough</div>
-                  </div>
-                </div>
-              )}
-
-              {previewTab === 'cohorts' && (
-                <div className="preview-cohorts-view">
-                  <div className="cohorts-preview-grid">
-                    <div className="cohort-stat-cell">
-                      <span>Total Accounts Monitored</span>
-                      <b>3,500</b>
-                    </div>
-                    <div className="cohort-stat-cell">
-                      <span>Portfolio Average Health</span>
-                      <b style={{ color: '#22c55e' }}>84.8 / 100</b>
-                    </div>
-                    <div className="cohort-stat-cell">
-                      <span>Annual Revenue Protected</span>
-                      <b>$14.2M</b>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="preview-modal-footer">
-              <button
-                type="button"
-                className="arth-cta-primary"
-                onClick={() => { setPreviewModalOpen(false); handleQuickAccess(); }}
-              >
-                <span>Step Into Full Platform</span>
-                <ArrowRight size={17} />
-              </button>
-            </div>
-          </div>
+        <div className="auth-panel-footer">
+          <span>SOC-2 Type II</span>
+          <span>•</span>
+          <span>HIPAA & GDPR</span>
+          <span>•</span>
+          <span>99.98% SLA</span>
         </div>
-      )}
+      </section>
     </main>
   );
 }
@@ -815,7 +579,7 @@ function Overview({
               <span className="auth-period-tag">{periodLabel}</span>
             </span>
           </div>
-          <h2><span className="liquid-glass-text">{greeting}</span> <span>*</span></h2>
+          <h2>{greeting} <span>*</span></h2>
           <p className="auth-dynamic-tagline">{authTagline}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -2633,7 +2397,7 @@ function SettingsPage({
                 <input
                   value={usernameInput}
                   onChange={e => setUsernameInput(e.target.value)}
-                  placeholder="e.g. Alex Vance"
+                  placeholder="e.g. Jal Patel"
                 />
               </label>
               <button className="primary-button" onClick={handleSaveUsername} style={{ marginTop: '8px', marginBottom: '24px', alignSelf: 'flex-start' }}>
@@ -2648,7 +2412,7 @@ function SettingsPage({
                 <input
                   value={workspaceInput}
                   onChange={e => setWorkspaceInput(e.target.value)}
-                  placeholder="e.g. Acme Corp or Northstar Cloud"
+                  placeholder="e.g. Acme Corp or Patel Dynamics"
                 />
               </label>
               <label>Default currency<select defaultValue="USD"><option>USD - US Dollar</option><option>EUR - Euro</option><option>GBP - Pound Sterling</option></select></label>
@@ -2667,8 +2431,8 @@ function SettingsPage({
                       padding: '16px',
                       borderRadius: '12px',
                       border: `2px solid ${theme === 'dark' ? 'var(--teal)' : 'var(--line)'}`,
-                      background: 'var(--paper)',
-                      color: 'var(--ink)',
+                      background: '#111916',
+                      color: '#f2f7f5',
                       cursor: 'pointer',
                       boxShadow: theme === 'dark' ? '0 0 16px var(--teal-glow)' : 'none',
                       transition: 'all .2s ease'
@@ -2678,8 +2442,8 @@ function SettingsPage({
                       <Moon size={18} color="var(--teal)" />
                       {theme === 'dark' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Celestial Aurora Twilight</b>
-                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Luminous iOS 27 liquid glass aurora with vibrant iris, rose, and amber refraction.</p>
+                    <b>Midnight Obsidian</b>
+                    <p style={{ fontSize: '11px', color: '#7d968d', marginTop: '4px' }}>Ultra-sleek OLED dark mode with glowing emerald accents.</p>
                   </div>
                   <div
                     onClick={() => theme !== 'light' && onToggleTheme()}
@@ -2687,8 +2451,8 @@ function SettingsPage({
                       padding: '16px',
                       borderRadius: '12px',
                       border: `2px solid ${theme === 'light' ? 'var(--teal)' : 'var(--line)'}`,
-                      background: 'var(--paper-elevated)',
-                      color: 'var(--ink)',
+                      background: '#ffffff',
+                      color: '#11201b',
                       cursor: 'pointer',
                       boxShadow: theme === 'light' ? '0 0 16px var(--teal-glow)' : 'none',
                       transition: 'all .2s ease'
@@ -2698,8 +2462,8 @@ function SettingsPage({
                       <Sun size={18} color="var(--gold)" />
                       {theme === 'light' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Prismatic Pearl Glass</b>
-                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Radiant iridescent frosted day aesthetic with optical chromatic caustics.</p>
+                    <b>Emerald Mist</b>
+                    <p style={{ fontSize: '11px', color: '#6a7f76', marginTop: '4px' }}>Refined, clean editorial day aesthetic.</p>
                   </div>
                 </div>
               </div>
@@ -2840,8 +2604,11 @@ function SettingsPage({
 }
 
 export default function App() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
+  const [authenticated, setAuthenticated] = useState<boolean>(() => {
+    const explicitlyLoggedOut = localStorage.getItem('kairon_explicit_logout') === 'true';
+    return !explicitlyLoggedOut;
+  });
+  const [authReady, setAuthReady] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>('overview');
