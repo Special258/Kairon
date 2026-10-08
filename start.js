@@ -10,7 +10,7 @@ const npmCmd = isWindows ? 'npm.cmd' : 'npm';
 const pythonCmd = 'python';
 
 // Start Python Backend
-const backend = spawn(pythonCmd, ['-m', 'uvicorn', 'app.main:app', '--app-dir', 'backend', '--host', '127.0.0.1', '--port', '8000', '--reload'], {
+const backend = spawn('python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload', {
   cwd: __dirname,
   shell: true,
   stdio: 'pipe'
@@ -27,7 +27,7 @@ backend.stderr.on('data', (data) => {
 });
 
 // Start Frontend Dev Server
-const frontend = spawn(npmCmd, ['run', 'dev'], {
+const frontend = spawn('npm run dev', {
   cwd: path.join(__dirname, 'frontend'),
   shell: true,
   stdio: 'pipe'
