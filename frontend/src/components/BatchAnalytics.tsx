@@ -94,8 +94,8 @@ export const BatchAnalytics: React.FC = () => {
               <span>Sample CSV Template</span>
             </button>
 
-            <label className="btn-laser-calc text-xs py-2 px-4 cursor-pointer">
-              <Upload className="w-3.5 h-3.5 text-[#0D1117]" />
+            <label className="primary-button text-xs py-2 px-4 cursor-pointer">
+              <Upload className="w-3.5 h-3.5 text-white" />
               <span>{loading ? 'Processing Batch...' : 'Upload & Score CSV'}</span>
               <input
                 type="file"

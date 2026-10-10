@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { 
   Activity, Sliders, Layers, BarChart3, ChevronLeft, ChevronRight, 
   Cpu, Database, Sparkles, RefreshCw, ShieldCheck 
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-9 h-9 rounded-lg bg-[#1A2230] border border-[#5B86E5]/40 flex items-center justify-center text-[#E5A93C] shadow-lg shrink-0">
-                <Sparkles className="w-5 h-5 text-[#E5A93C] animate-pulse" />
+                <Sparkles className="w-5 h-5 text-[#E5A93C]" />
               </div>
               <div className="truncate">
                 <h1 className="font-serif text-base font-semibold text-[#F3EFE6] tracking-wide flex items-center gap-1.5">

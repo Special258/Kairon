@@ -89,27 +89,21 @@ function Logo() {
   return (
     <div className="logo-lockup">
       <div className="logo-mark">
-        <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="kaironGrad" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#06b6d4" />
-              <stop offset="0.55" stopColor="#10b981" />
-              <stop offset="1" stopColor="#3b82f6" />
+            <linearGradient id="kaironGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#ffffff" />
+              <stop offset="1" stopColor="#e0e7ff" />
             </linearGradient>
-            <filter id="kaironGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#06b6d4" floodOpacity="0.4" />
-            </filter>
           </defs>
-          <polygon points="14,2 25,8.5 25,21.5 14,28 3,21.5 3,8.5" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinejoin="round" fill="rgba(6, 182, 212, 0.08)" filter="url(#kaironGlow)" />
-          <circle cx="14" cy="14" r="3.2" fill="url(#kaironGrad)" />
-          <line x1="14" y1="2" x2="14" y2="10.8" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
-          <line x1="25" y1="21.5" x2="16.8" y2="16.2" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
-          <line x1="3" y1="21.5" x2="11.2" y2="16.2" stroke="url(#kaironGrad)" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#kaironGrad)" fillOpacity="0.95" />
+          <path d="M2 17L12 22L22 17" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M2 12L12 17L22 12" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <div className="logo-text">
-        <strong className="brand-name">KAIRON</strong>
-        <small className="brand-tagline">RETENTION INTELLIGENCE</small>
+        <strong className="brand-name">Kairon</strong>
+        <small className="brand-tagline">Relationship Studio</small>
       </div>
     </div>
   );
@@ -444,21 +438,21 @@ function Topbar({
           <Menu size={20} />
         </button>
         <div>
-          <span className="breadcrumb"><span className="hud-code-prefix">[SYS.NODE]</span> Workspace <span style={{ opacity: .5, margin: '0 1px' }}>›</span> {labels[page]}</span>
+          <span className="breadcrumb">{currentUser.workspaceName} <span style={{ opacity: .45, margin: '0 4px' }}>/</span> {labels[page]}</span>
           <h1>{labels[page]}</h1>
         </div>
       </div>
 
       <div className="topbar-center-telemetry">
-        <div className="telemetry-pill" title="Live Inference Cluster Telemetry">
+        <div className="telemetry-pill" title="Live System Health">
           <span className="radar-ping-wrap"><i className="radar-ping-dot" /></span>
-          <span className="telemetry-label">INFERENCE:</span>
-          <b className="telemetry-val">18ms</b>
+          <span className="telemetry-label">Status:</span>
+          <b className="telemetry-val" style={{ color: 'var(--teal)' }}>Operational</b>
           <span className="telemetry-divider">/</span>
-          <span className="telemetry-label">ROC:</span>
+          <span className="telemetry-label">ROC-AUC:</span>
           <b className="telemetry-val">0.984</b>
           <span className="telemetry-divider">/</span>
-          <span className="telemetry-tag">AES-256 E2EE</span>
+          <span className="telemetry-tag">E2EE Protected</span>
         </div>
       </div>
 
@@ -606,26 +600,22 @@ function Overview({
       </div>
 
       <div className="quick-action-bar">
-        <span className="quick-action-label"><Sparkles size={14} color="var(--teal)" /> Quick Actions:</span>
+        <span className="quick-action-label"><Sparkles size={14} color="var(--primary)" /> Studio Shortcuts:</span>
         <button type="button" className="quick-action-btn" onClick={() => setPage('scorer')}>
-          <Gauge size={14} color="var(--teal)" />
-          <span className="tech-badge-num">[01]</span>
-          <span>Score New Account</span>
+          <Gauge size={14} color="var(--primary)" />
+          <span>Score Account</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={() => setPage('customers')}>
-          <UploadCloud size={14} color="var(--teal)" />
-          <span className="tech-badge-num">[02]</span>
-          <span>Upload Cohort (CSV)</span>
+          <UploadCloud size={14} color="var(--primary)" />
+          <span>Upload Cohort</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={() => setPage('whatif')}>
           <SlidersHorizontal size={14} color="var(--gold)" />
-          <span className="tech-badge-num">[03]</span>
-          <span>Run What-If Simulation</span>
+          <span>What-If Simulation</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={onOpenAI}>
-          <Sparkles size={14} color="var(--lavender)" />
-          <span className="tech-badge-num">[04]</span>
-          <span>Launch AI Copilot</span>
+          <Sparkles size={14} color="var(--primary)" />
+          <span>AI Strategy Assistant</span>
         </button>
         {onOpenCmdPalette && (
           <button type="button" className="quick-action-btn tech-cmd-hint-btn" onClick={onOpenCmdPalette}>
@@ -2430,40 +2420,40 @@ function SettingsPage({
                     style={{
                       padding: '16px',
                       borderRadius: '12px',
-                      border: `2px solid ${theme === 'dark' ? 'var(--teal)' : 'var(--line)'}`,
-                      background: '#111916',
-                      color: '#f2f7f5',
+                      border: `2px solid ${theme === 'dark' ? 'var(--primary)' : 'var(--line)'}`,
+                      background: '#111827',
+                      color: '#f8fafc',
                       cursor: 'pointer',
-                      boxShadow: theme === 'dark' ? '0 0 16px var(--teal-glow)' : 'none',
+                      boxShadow: theme === 'dark' ? '0 4px 16px rgba(0, 0, 0, 0.4)' : 'none',
                       transition: 'all .2s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <Moon size={18} color="var(--teal)" />
-                      {theme === 'dark' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
+                      <Moon size={18} color="var(--primary)" />
+                      {theme === 'dark' && <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Midnight Obsidian</b>
-                    <p style={{ fontSize: '11px', color: '#7d968d', marginTop: '4px' }}>Ultra-sleek OLED dark mode with glowing emerald accents.</p>
+                    <b>Obsidian Slate</b>
+                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Deep slate dark theme with calm solid borders.</p>
                   </div>
                   <div
                     onClick={() => theme !== 'light' && onToggleTheme()}
                     style={{
                       padding: '16px',
                       borderRadius: '12px',
-                      border: `2px solid ${theme === 'light' ? 'var(--teal)' : 'var(--line)'}`,
+                      border: `2px solid ${theme === 'light' ? 'var(--primary)' : 'var(--line)'}`,
                       background: '#ffffff',
-                      color: '#11201b',
+                      color: '#0f172a',
                       cursor: 'pointer',
-                      boxShadow: theme === 'light' ? '0 0 16px var(--teal-glow)' : 'none',
+                      boxShadow: theme === 'light' ? '0 4px 16px rgba(15, 23, 42, 0.08)' : 'none',
                       transition: 'all .2s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <Sun size={18} color="var(--gold)" />
-                      {theme === 'light' && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 700 }}>ACTIVE</span>}
+                      {theme === 'light' && <span style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700 }}>ACTIVE</span>}
                     </div>
-                    <b>Emerald Mist</b>
-                    <p style={{ fontSize: '11px', color: '#6a7f76', marginTop: '4px' }}>Refined, clean editorial day aesthetic.</p>
+                    <b>Studio Daylight</b>
+                    <p style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Clean, human-designed Canva studio aesthetic.</p>
                   </div>
                 </div>
               </div>

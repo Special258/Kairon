@@ -398,15 +398,15 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           </div>
         </div>
 
-        {/* Laser Calculation Button */}
+        {/* Calculation Button */}
         <div className="pt-2">
           <button
             type="button"
             onClick={onPredict}
             disabled={loading}
-            className="btn-laser-calc w-full py-3"
+            className="primary-button w-full py-3"
           >
-            <Sparkles className="w-4 h-4 text-[#0D1117] animate-spin" style={{ animationDuration: '3s' }} />
+            <Sparkles className="w-4 h-4 text-white" />
             <span>{loading ? 'Evaluating Model Inference...' : 'Calculate Predictive Risk Score'}</span>
           </button>
         </div>

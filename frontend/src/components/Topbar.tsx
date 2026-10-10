@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Search, Sparkles, Database, TrendingUp, ShieldAlert, Zap } from 'lucide-react';
 import { DatasetSummary, ModelMetrics } from '../types';
 import { CountUp } from './CountUp';
@@ -82,10 +82,10 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="flex items-center gap-3">
         <button
           onClick={onQuickScan}
-          className="btn-laser-calc text-xs py-1.5 px-3.5"
+          className="primary-button text-xs py-1.5 px-3.5"
           title="Run Predictive Analysis on current parameters"
         >
-          <Sparkles className="w-4 h-4 text-[#0D1117]" />
+          <Sparkles className="w-4 h-4 text-white" />
           <span className="hidden sm:inline">Evaluate Model Inference</span>
           <span className="sm:hidden">Run</span>
         </button>
