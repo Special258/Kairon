@@ -1,4 +1,4 @@
-﻿# Kairon
+# Kairon
 ## Customer Relationship Intelligence and Retention Decision Platform
 
 **Project report**  
@@ -8,7 +8,7 @@
 ---
 
 ## 1. Executive Summary
-
+  
 Kairon is a customer relationship intelligence platform designed to help customer success, account management, and revenue teams identify churn risk early and respond with a clear, evidence-based action.
 
 The central idea is simple:

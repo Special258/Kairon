@@ -196,6 +196,10 @@ def save_accounts_batch(accounts: List[Dict[str, Any]]) -> None:
 def delete_account(account_id: str) -> bool:
     with get_db_connection() as conn:
         cursor = conn.cursor()
+        if account_id.lower() == "all":
+            cursor.execute("DELETE FROM accounts")
+            conn.commit()
+            return True
         cursor.execute("DELETE FROM accounts WHERE id = ? OR customer_id = ?", (account_id, account_id))
         conn.commit()
         return cursor.rowcount > 0

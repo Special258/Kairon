@@ -5,7 +5,7 @@ import {
 } from '../types';
 import { getAccessToken } from './auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && (window.location.port === '8000' || !window.location.port) ? '' : 'http://127.0.0.1:8000');
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 async function authHeaders(): Promise<Record<string, string>> {
   const token = await getAccessToken();

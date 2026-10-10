@@ -97,7 +97,7 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data: https: blob:; "
-            "connect-src 'self' https: wss:; "
+            "connect-src 'self' http://localhost:3000 http://127.0.0.1:3000 http://localhost:8000 http://127.0.0.1:8000 https: wss: ws:; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "frame-ancestors 'none';"
         )
@@ -121,24 +121,22 @@ def api_status():
         "docs_url": "/docs"
     }
 
-@app.get("/favicon.ico")
+@app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     icon_path = os.path.join(dist_dir, "icon-192.svg")
     if os.path.isfile(icon_path):
         return FileResponse(icon_path, media_type="image/svg+xml")
     return Response(status_code=204)
 
-@app.get("/manifest.webmanifest")
+@app.get("/manifest.webmanifest", include_in_schema=False)
 def manifest():
     manifest_path = os.path.join(dist_dir, "manifest.webmanifest")
     if os.path.isfile(manifest_path):
         return FileResponse(manifest_path, media_type="application/manifest+json")
     raise HTTPException(status_code=404)
 
-@app.api_route("/", methods=["GET", "HEAD"])
+@app.get("/", include_in_schema=False)
 def root(request: Request):
-    if request.method == "HEAD":
-        return Response(status_code=200)
     index_path = os.path.join(dist_dir, "index.html")
     if os.path.isfile(index_path) and "application/json" not in request.headers.get("accept", ""):
         return FileResponse(index_path)
@@ -156,10 +154,12 @@ def root(request: Request):
         "docs_url": "/docs"
     }
 
-@app.api_route("/api/health", methods=["GET", "HEAD"])
-def health_check(request: Request):
-    if request.method == "HEAD":
-        return Response(status_code=200)
+@app.head("/", include_in_schema=False)
+def root_head():
+    return Response(status_code=200)
+
+@app.get("/api/health")
+def health_check():
     _, _, metadata = get_artifacts()
     return {
         "status": "healthy",
@@ -169,6 +169,10 @@ def health_check(request: Request):
         "accuracy": metadata.get("accuracy"),
         "version": metadata.get("version")
     }
+
+@app.head("/api/health", include_in_schema=False)
+def health_check_head():
+    return Response(status_code=200)
 
 @app.get("/api/model/metrics", response_model=ModelMetrics)
 def get_metrics():
