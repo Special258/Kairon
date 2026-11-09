@@ -81,7 +81,7 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
   { id: 'reviews', label: 'Team reviews', icon: MessageSquare },
   { id: 'model', label: 'Model diagnostics', icon: FlaskConical }
 ];
-const riskColors: Record<string, string> = { Low: '#9B7BD1', Moderate: '#F4B13E', High: '#E4572E', Critical: '#9E1A36' };
+const riskColors: Record<string, string> = { Low: '#238b67', Moderate: '#c78b1a', High: '#d76d3c', Critical: '#c75252' };
 const riskTone = (tier: string) => tier.toLowerCase();
 const formatMoney = (value: number) => `$${Math.round(value).toLocaleString()}`;
 
