@@ -25,17 +25,6 @@ export function getSessionUser(): SessionUser | null {
   try {
     const raw = localStorage.getItem(LOCAL_SESSION_KEY) || localStorage.getItem(LEGACY_DEMO_KEY);
     if (raw) return JSON.parse(raw);
-    const explicitlyLoggedOut = localStorage.getItem('kairon_explicit_logout') === 'true';
-    if (!explicitlyLoggedOut) {
-      const defaultUser: SessionUser = {
-        id: 'user-default-1',
-        email: 'alex.vance@northstar.io',
-        name: getStoredCustomUsername() || 'Alex Vance',
-        role: 'Customer Success Lead'
-      };
-      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(defaultUser));
-      return defaultUser;
-    }
     return null;
   } catch {
     return null;

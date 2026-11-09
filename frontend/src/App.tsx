@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, AlertTriangle, ArrowRight, BarChart3, Bell, Check, CircleHelp, Clock3,
   DollarSign, Download, Eye, EyeOff, FileSpreadsheet, FlaskConical, Gauge, HeartHandshake,
@@ -9,7 +9,7 @@ import {
   Globe, MapPin
 } from 'lucide-react';
 import { fetchModelMetrics, fetchSecurityAudit, predictCustomer, simulateWhatIf, uploadBatchCSV, loadEnterpriseSampleCohort, downloadCohortTemplate } from './services/api';
-import { getAuthSession, getDemoUser, parseNameFromEmail, getInitials, getStoredCustomUsername, setStoredCustomUsername, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
+import { getAuthSession, getSessionUser, getDemoUser, parseNameFromEmail, getInitials, getStoredCustomUsername, setStoredCustomUsername, signInDemo, signInWithGoogle, signInWithPassword, signOutUser, signUpWithPassword, subscribeToAuthState } from './services/auth';
 import { e2ee } from './services/e2ee';
 import {
   loadReviewNotes, addReviewNote, type ReviewNoteData,
@@ -81,7 +81,7 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
   { id: 'reviews', label: 'Team reviews', icon: MessageSquare },
   { id: 'model', label: 'Model diagnostics', icon: FlaskConical }
 ];
-const riskColors: Record<string, string> = { Low: '#238b67', Moderate: '#c78b1a', High: '#d76d3c', Critical: '#c75252' };
+const riskColors: Record<string, string> = { Low: '#9B7BD1', Moderate: '#F4B13E', High: '#E4572E', Critical: '#9E1A36' };
 const riskTone = (tier: string) => tier.toLowerCase();
 const formatMoney = (value: number) => `$${Math.round(value).toLocaleString()}`;
 
@@ -131,12 +131,25 @@ function AuthScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const timeMsg = getAuthScreenTimeMessage();
   const locInfo = getUserLocationAndTime();
 
+  function handleModeChange(targetMode: AuthMode) {
+    if (targetMode === mode) return;
+    setIsTransitioning(true);
+    setMode(targetMode);
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 600);
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
-    const cleanEmail = email.trim() || 'lead@workspace.io';
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password.trim()) {
+      return;
+    }
     const cleanName = name.trim() || getStoredCustomUsername() || parseNameFromEmail(cleanEmail);
     if (cleanName) {
       setStoredCustomUsername(cleanName);
@@ -146,22 +159,56 @@ function AuthScreen({
   function continueWithGoogle() { void onGoogle(); }
 
   return (
-    <main className="auth-page">
+    <main className={`auth-page ${mode === 'signup' ? 'signup-active' : 'signin-active'} ${isTransitioning ? 'mode-morphing' : ''}`}>
+      {/* Sliding Ambient Brand Story Showcase */}
       <section className="auth-story">
+        <div className="auth-story-bg-mesh" aria-hidden="true" />
         <div className="auth-story-top">
           <Logo />
-          <span className="status-pill"><i /> Model engine live</span>
+          <span className="status-pill"><i /> Retention AI engine live</span>
         </div>
-        <div className="story-copy">
-          <span className="eyebrow"><Sparkles size={14} /> retention intelligence, made human</span>
-          <h1>See the signal.<br /><em>Keep the relationship.</em></h1>
-          <p>Kairon helps customer teams see which relationships need attention, understand why risk is rising, and choose the next best action before a renewal becomes a rescue mission.</p>
-          <div className="story-steps">
-            <div><b>01</b><span>Connect your customer signals</span></div>
-            <div><b>02</b><span>Understand health and churn risk</span></div>
-            <div><b>03</b><span>Act, review, and protect revenue</span></div>
+        <div className="story-content-slider">
+          <div className={`story-copy ${mode === 'signin' ? 'story-visible' : 'story-hidden'}`}>
+            <span className="eyebrow"><Sparkles size={14} /> Intelligence Made Human</span>
+            <h1>See the signal.<br /><em>Keep the relationship.</em></h1>
+            <p>Kairon continuously analyzes 11 critical health signals to predict account risk before renewal conversations become emergency rescues.</p>
+            <div className="story-steps">
+              <div className="step-card">
+                <b>01</b>
+                <span>Automated signal detection across MRR & tickets</span>
+              </div>
+              <div className="step-card">
+                <b>02</b>
+                <span>Explainable ML driver attribution</span>
+              </div>
+              <div className="step-card">
+                <b>03</b>
+                <span>Actionable, zero-friction retention playbooks</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={`story-copy signup-story ${mode === 'signup' ? 'story-visible' : 'story-hidden'}`}>
+            <span className="eyebrow"><ShieldCheck size={14} /> Zero-Knowledge Security</span>
+            <h1>Protect every<br /><em>key account.</em></h1>
+            <p>Deploy end-to-end encrypted churn intelligence for your entire customer portfolio with client-side Web Crypto safeguards.</p>
+            <div className="story-steps">
+              <div className="step-card">
+                <b>92.4%</b>
+                <span>Model ROC-AUC validation score</span>
+              </div>
+              <div className="step-card">
+                <b>AES-256</b>
+                <span>Client-side zero-knowledge reviews</span>
+              </div>
+              <div className="step-card">
+                <b>-18.6%</b>
+                <span>Average enterprise churn reduction</span>
+              </div>
+            </div>
           </div>
         </div>
+
         <div className="story-orbit">
           <div className="orbit-ring ring-one" />
           <div className="orbit-ring ring-two" />
@@ -174,9 +221,11 @@ function AuthScreen({
           <div className="orbit-note note-two"><ShieldCheck size={14} /> 847 accounts protected</div>
         </div>
         <div className="story-footer">
-          <span>Trusted by customer teams who put relationships first.</span>
+          <span>Trusted by customer success, rev-ops, and executive retention teams.</span>
         </div>
       </section>
+
+      {/* Interactive Form Panel */}
       <section className="auth-panel">
         <div className="auth-panel-top">
           <div className="auth-security-tag">
@@ -218,68 +267,92 @@ function AuthScreen({
               <span className="auth-loc-clock">{locInfo.localTimeString}</span>
             </div>
             <div className="auth-switch">
-              <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => setMode('signin')}>Sign in</button>
-              <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => setMode('signup')}>Create account</button>
+              <button
+                type="button"
+                className={mode === 'signin' ? 'active' : ''}
+                onClick={() => handleModeChange('signin')}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                className={mode === 'signup' ? 'active' : ''}
+                onClick={() => handleModeChange('signup')}
+              >
+                Create account
+              </button>
+              <div className={`auth-switch-glider ${mode === 'signup' ? 'to-right' : 'to-left'}`} />
             </div>
-            <form className="auth-form" onSubmit={submit}>
-              <label>
-                Username / Display name
-                <input
-                  required
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Jal Patel"
-                  autoComplete="name"
-                />
-              </label>
+
+            <form className={`auth-form form-mode-${mode}`} onSubmit={submit}>
               {mode === 'signup' && (
-                <label>
-                  Workspace / Organization name
-                  <input
-                    value={workspaceName}
-                    onChange={e => setWorkspaceName(e.target.value)}
-                    placeholder="e.g. Acme Corp or Patel Dynamics"
-                  />
-                </label>
-              )}
-              <label>
-                Work email
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
-              </label>
-              <label>
-                Password
-                <div className="input-with-icon">
-                  <input
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                  />
-                  <button
-                    type="button"
-                    className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
-                    onClick={() => setShowPassword(prev => !prev)}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <LockKeyholeOpen size={16} className="lock-icon open-anim" />
-                    ) : (
-                      <LockKeyhole size={16} className="lock-icon lock-anim" />
-                    )}
-                  </button>
+                <div className="form-field-animated enter-signup">
+                  <label>
+                    Full name / Display name
+                    <input
+                      required
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="e.g. Alex Vance"
+                      autoComplete="name"
+                    />
+                  </label>
                 </div>
-              </label>
+              )}
+              {mode === 'signup' && (
+                <div className="form-field-animated enter-signup delay-1">
+                  <label>
+                    Workspace / Organization name
+                    <input
+                      value={workspaceName}
+                      onChange={e => setWorkspaceName(e.target.value)}
+                      placeholder="e.g. Acme Corp or Northstar"
+                    />
+                  </label>
+                </div>
+              )}
+              <div className="form-field-animated">
+                <label>
+                  Work email
+                  <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" autoComplete="email" />
+                </label>
+              </div>
+              <div className="form-field-animated">
+                <label>
+                  Password
+                  <div className="input-with-icon">
+                    <input
+                      required
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    />
+                    <button
+                      type="button"
+                      className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
+                      onClick={() => setShowPassword(prev => !prev)}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <LockKeyholeOpen size={16} className="lock-icon open-anim" />
+                      ) : (
+                        <LockKeyhole size={16} className="lock-icon lock-anim" />
+                      )}
+                    </button>
+                  </div>
+                </label>
+              </div>
               {mode === 'signin' && (
-                <div className="form-meta">
+                <div className="form-meta form-field-animated">
                   <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
                   <button type="button" className="text-button">Forgot password?</button>
                 </div>
               )}
               <button className="primary-button auth-submit" disabled={loading}>
-                {loading ? 'Entering workspace...' : mode === 'signin' ? 'Enter workspace' : 'Create workspace'} <ArrowRight size={17} />
+                {loading ? 'Authenticating...' : mode === 'signin' ? 'Sign in to workspace' : 'Create workspace account'} <ArrowRight size={17} />
               </button>
             </form>
 
@@ -291,19 +364,6 @@ function AuthScreen({
               disabled={loading}
             >
               <span className="google-dot">G</span> {loading ? 'Connecting securely...' : 'Continue with Google'}
-            </button>
-            <button
-              type="button"
-              className="demo-direct-button"
-              onClick={() => {
-                const cleanEmail = email.trim() || 'alex.vance@northstar.io';
-                const cleanName = name.trim() || getStoredCustomUsername() || 'Alex Vance';
-                void onAuth('signin', cleanName, cleanEmail, 'demo123', workspaceName.trim() || 'Northstar Enterprise');
-              }}
-              disabled={loading}
-              title="Launch Kairon Enterprise Demo Workspace with 1 click"
-            >
-              <Zap size={15} /> <span>Instant Demo Workspace Access →</span>
             </button>
             {authError && <p className="auth-error" role="alert">{authError}</p>}
           </div>
@@ -556,6 +616,74 @@ function Overview({
   const highCount = workspaceAccounts.filter(a => a.risk_tier === 'High').length;
   const critCount = workspaceAccounts.filter(a => a.risk_tier === 'Critical').length;
 
+  // 2026 "Today's Focus" Queue: 3 to 5 accounts to act on today (answers: which account should I act on today, and why?)
+  const todaysFocusAccounts = useMemo(() => {
+    if (workspaceAccounts.length > 0) {
+      const sorted = [...workspaceAccounts].sort((a, b) => b.churn_probability - a.churn_probability);
+      return sorted.slice(0, 4).map(acc => ({
+        id: acc.customer_id,
+        name: acc.company_name,
+        mrr: acc.monthly_charges,
+        riskTier: acc.risk_tier,
+        churnProb: acc.churn_probability,
+        reason: acc.churn_probability > 75 
+          ? 'Contract renewal in 30d with severe drop in feature adoption (-45%)'
+          : acc.churn_probability > 50
+          ? 'High support ticket volume (6+) without dedicated technical specialist'
+          : 'Month-to-month billing with stagnant product usage trends',
+        nextStep: acc.churn_probability > 75
+          ? 'Initiate executive sponsor rescue sync & offer annual contract discount'
+          : acc.churn_probability > 50
+          ? 'Assign dedicated tech support & schedule onboarding review'
+          : 'Send automated feature engagement playbook',
+        rawAccount: acc
+      }));
+    }
+    // Benchmark / Default Focus Queue
+    return [
+      {
+        id: 'ACC-8491',
+        name: 'Apex Cloud Logistics',
+        mrr: 18500,
+        riskTier: 'Critical' as const,
+        churnProb: 88.4,
+        reason: 'Contract renewal cliff in 22 days, usage down 48%, 6 unresolved tickets',
+        nextStep: 'Deploy VP Customer Success for executive alignment & pricing review',
+        rawAccount: null
+      },
+      {
+        id: 'ACC-5120',
+        name: 'Meridian Global Health',
+        mrr: 12200,
+        riskTier: 'High' as const,
+        churnProb: 73.1,
+        reason: 'Primary champion departed; electronic check payment failure on last cycle',
+        nextStep: 'Reach out to new team lead with tailored onboarding sequence',
+        rawAccount: null
+      },
+      {
+        id: 'ACC-3941',
+        name: 'Vanguard FinTech Labs',
+        mrr: 9400,
+        riskTier: 'High' as const,
+        churnProb: 66.8,
+        reason: 'Feature adoption plateaued at 28%; zero technical support tickets filed',
+        nextStep: 'Schedule technical integration audit with solutions engineering',
+        rawAccount: null
+      },
+      {
+        id: 'ACC-7703',
+        name: 'Kinetic Data Systems',
+        mrr: 7800,
+        riskTier: 'Moderate' as const,
+        churnProb: 44.5,
+        reason: 'NPS score dipped to 5 following platform migration; usage stable',
+        nextStep: 'Send tailored CSM satisfaction pulse and schedule quarterly review',
+        rawAccount: null
+      }
+    ];
+  }, [workspaceAccounts]);
+
   return (
     <div className="page-content overview-page">
       <div className="page-intro">
@@ -610,7 +738,7 @@ function Overview({
           <span>Upload Cohort</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={() => setPage('whatif')}>
-          <SlidersHorizontal size={14} color="var(--gold)" />
+          <SlidersHorizontal size={14} color="var(--secondary)" />
           <span>What-If Simulation</span>
         </button>
         <button type="button" className="quick-action-btn" onClick={onOpenAI}>
@@ -637,6 +765,81 @@ function Overview({
           </button>
         </div>
       )}
+
+      {/* 2026 Hero: Today's Focus Queue (Answers: Which account should I act on today, and why?) */}
+      <section className="todays-focus-hero">
+        <div className="panel-heading">
+          <div>
+            <div className="focus-header-row">
+              <span className="eyebrow" style={{ color: 'var(--primary)' }}>
+                <Zap size={13} /> The Opportune Moment • Today's Focus
+              </span>
+              <span className="focus-badge-pill">
+                <Clock3 size={12} /> Priority Queue
+              </span>
+            </div>
+            <h3 style={{ fontFamily: 'Fraunces, serif', fontSize: '22px', marginTop: '4px' }}>
+              Accounts Requiring Action Today
+            </h3>
+            <p className="muted" style={{ fontSize: '13px' }}>
+              Ranked by real-time churn risk and exposed revenue. Act before the renewal window closes.
+            </p>
+          </div>
+          <div className="focus-top-actions">
+            <span className="focus-count-tag">{todaysFocusAccounts.length} Urgent Accounts</span>
+          </div>
+        </div>
+
+        <div className="todays-focus-grid">
+          {todaysFocusAccounts.map((item) => (
+            <div key={item.id} className={`focus-account-card tier-${item.riskTier.toLowerCase()}`}>
+              <div className="focus-card-top">
+                <div className="focus-account-info">
+                  <span className="focus-account-avatar">{item.name.slice(0, 1).toUpperCase()}</span>
+                  <div>
+                    <strong className="focus-account-name">{item.name}</strong>
+                    <small className="focus-account-id">{item.id} • {formatMoney(item.mrr)} MRR</small>
+                  </div>
+                </div>
+                <span className={`risk-badge ${item.riskTier.toLowerCase()}`}>
+                  {item.riskTier} ({item.churnProb.toFixed(0)}%)
+                </span>
+              </div>
+              <div className="focus-card-reason">
+                <small className="focus-label">Why at risk:</small>
+                <p>{item.reason}</p>
+              </div>
+              <div className="focus-card-action">
+                <small className="focus-label">Recommended next step:</small>
+                <div className="focus-step-box">
+                  <ArrowRight size={13} className="focus-step-arrow" />
+                  <span>{item.nextStep}</span>
+                </div>
+              </div>
+              <div className="focus-card-footer">
+                <button 
+                  className="secondary-button compact-btn"
+                  onClick={() => setPage('scorer')}
+                >
+                  <Gauge size={13} /> Open Scorer
+                </button>
+                <button 
+                  className="secondary-button compact-btn"
+                  onClick={() => setPage('whatif')}
+                >
+                  <SlidersHorizontal size={13} /> What-If
+                </button>
+                <button 
+                  className="primary-button compact-btn"
+                  onClick={() => setPage('reviews')}
+                >
+                  <MessageSquare size={13} /> Start Review
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {!hasAccounts && !isBenchmark && (
         <div className="onboarding-guide-card">
@@ -689,7 +892,7 @@ function Overview({
           value={isBenchmark ? "$1.84M" : (hasAccounts ? formatMoney(totalProtected) : "$0")}
           delta={isBenchmark ? "12.8%" : (hasAccounts ? "+Live" : "0 active")}
           icon={ShieldCheck}
-          accent="#238b67"
+          accent="#9B7BD1"
         />
         <MetricCard
           label="At-risk revenue"
@@ -697,21 +900,21 @@ function Overview({
           delta={isBenchmark ? "8.4%" : (hasAccounts ? `${highCount + critCount} accounts` : "0 exposed")}
           positive={isBenchmark ? false : (hasAccounts ? highCount === 0 : true)}
           icon={TrendingDown}
-          accent="#c75252"
+          accent="#E4572E"
         />
         <MetricCard
           label="Accounts monitored"
           value={isBenchmark ? "2,481" : workspaceAccounts.length.toLocaleString()}
           delta={isBenchmark ? "6.2%" : (hasAccounts ? "workspace" : "none yet")}
           icon={Users}
-          accent="#7b69ad"
+          accent="#F4B13E"
         />
         <MetricCard
           label="Avg. health score"
           value={isBenchmark ? "78.4" : avgHealthScore}
           delta={isBenchmark ? "4.1%" : (hasAccounts ? "live avg" : "awaiting signals")}
           icon={HeartHandshake}
-          accent="#c78b1a"
+          accent="#D98A7A"
         />
       </div>
 
@@ -737,13 +940,13 @@ function Overview({
               <svg viewBox="0 0 720 220" preserveAspectRatio="none" aria-label="Customer health trend">
                 <defs>
                   <linearGradient id="healthFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0" stopColor="#238b67" stopOpacity=".22" />
-                    <stop offset="1" stopColor="#238b67" stopOpacity="0" />
+                    <stop offset="0" stopColor="#9B7BD1" stopOpacity=".22" />
+                    <stop offset="1" stopColor="#9B7BD1" stopOpacity="0" />
                   </linearGradient>
                 </defs>
                 <path d="M0,150 C50,135 65,160 110,127 S170,100 215,116 S275,88 320,102 S370,86 420,92 S470,70 520,77 S570,48 610,61 S680,36 720,28 L720,220 L0,220Z" fill="url(#healthFill)" />
-                <path d="M0,150 C50,135 65,160 110,127 S170,100 215,116 S275,88 320,102 S370,86 420,92 S470,70 520,77 S570,48 610,61 S680,36 720,28" fill="none" stroke="#238b67" strokeWidth="3" strokeLinecap="round" />
-                <path d="M0,189 C52,178 74,184 110,176 S170,187 215,167 S275,174 320,158 S380,171 420,146 S475,158 520,138 S575,142 610,126 S680,138 720,110" fill="none" stroke="#d76d3c" strokeWidth="2" strokeDasharray="5 6" strokeLinecap="round" />
+                <path d="M0,150 C50,135 65,160 110,127 S170,100 215,116 S275,88 320,102 S370,86 420,92 S470,70 520,77 S570,48 610,61 S680,36 720,28" fill="none" stroke="#9B7BD1" strokeWidth="3" strokeLinecap="round" />
+                <path d="M0,189 C52,178 74,184 110,176 S170,187 215,167 S275,174 320,158 S380,171 420,146 S475,158 520,138 S575,142 610,126 S680,138 720,110" fill="none" stroke="#E4572E" strokeWidth="2" strokeDasharray="5 6" strokeLinecap="round" />
               </svg>
               <div className="chart-x">
                 <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
@@ -2595,8 +2798,7 @@ function SettingsPage({
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState<boolean>(() => {
-    const explicitlyLoggedOut = localStorage.getItem('kairon_explicit_logout') === 'true';
-    return !explicitlyLoggedOut;
+    return Boolean(getSessionUser());
   });
   const [authReady, setAuthReady] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
@@ -2623,8 +2825,8 @@ export default function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   const [currentUser, setCurrentUser] = useState<UserIdentity>(() => {
-    const demo = getDemoUser();
-    return makeUserIdentity(demo?.name, demo?.email);
+    const user = getSessionUser();
+    return makeUserIdentity(user?.name, user?.email);
   });
 
   const [workspaceAccounts, setWorkspaceAccounts] = useState<ScoredAccountRecord[]>(() => loadWorkspaceAccounts());

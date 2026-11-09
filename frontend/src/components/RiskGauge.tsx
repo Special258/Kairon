@@ -1,6 +1,6 @@
 import React from 'react';
 import { CountUp } from './CountUp';
-import { AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react';
 
 interface RiskGaugeProps {
   probability: number; // 0 to 100
@@ -18,111 +18,145 @@ export const RiskGauge: React.FC<RiskGaugeProps> = ({
   const clampedProb = Math.min(100, Math.max(0, probability));
   const angle = -90 + (clampedProb / 100) * 180;
 
-  const badgeClass = {
-    Low: 'badge-risk-low',
-    Moderate: 'badge-risk-moderate',
-    High: 'badge-risk-high',
-    Critical: 'badge-risk-critical'
-  }[riskTier] || 'badge-risk-moderate';
+  // 2026 Warm Opportune Moment Tier Mapping with Distinct Accessible Shapes & Icons
+  const tierConfig = {
+    Low: {
+      color: '#9B7BD1', // Orchid
+      bg: 'rgba(155, 123, 209, 0.16)',
+      border: 'rgba(155, 123, 209, 0.35)',
+      shape: '◆',
+      label: 'Low Risk',
+      icon: ShieldCheck
+    },
+    Moderate: {
+      color: '#F4B13E', // Saffron
+      bg: 'rgba(244, 177, 62, 0.16)',
+      border: 'rgba(244, 177, 62, 0.35)',
+      shape: '▲',
+      label: 'Moderate Risk',
+      icon: AlertTriangle
+    },
+    High: {
+      color: '#E4572E', // Persimmon
+      bg: 'rgba(228, 87, 46, 0.16)',
+      border: 'rgba(228, 87, 46, 0.35)',
+      shape: '⬡',
+      label: 'High Risk',
+      icon: ShieldAlert
+    },
+    Critical: {
+      color: '#9E1A36', // Crimson-Mulberry
+      bg: 'rgba(158, 26, 54, 0.18)',
+      border: 'rgba(158, 26, 54, 0.35)',
+      shape: '⯄',
+      label: 'Critical Risk',
+      icon: AlertOctagon
+    }
+  }[riskTier] || {
+    color: '#F4B13E',
+    bg: 'rgba(244, 177, 62, 0.16)',
+    border: 'rgba(244, 177, 62, 0.35)',
+    shape: '▲',
+    label: `${riskTier} Risk`,
+    icon: AlertTriangle
+  };
 
-  const glowColor = {
-    Low: 'rgba(16, 185, 129, 0.25)',
-    Moderate: 'rgba(229, 169, 60, 0.25)',
-    High: 'rgba(249, 115, 22, 0.25)',
-    Critical: 'rgba(239, 68, 68, 0.35)'
-  }[riskTier] || 'rgba(91, 134, 229, 0.2)';
+  const TierIcon = tierConfig.icon;
 
   return (
-    <div className="relative glass-panel p-6 flex flex-col items-center justify-center overflow-hidden border border-[#293548]">
+    <div className="relative panel p-6 flex flex-col items-center justify-center overflow-hidden" style={{ background: 'var(--paper)', borderColor: 'var(--line)' }}>
       {/* Dynamic Ambient Risk Aura */}
       <div
-        className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full pointer-events-none blur-3xl opacity-30 transition-all duration-700"
-        style={{ backgroundColor: riskColor }}
+        className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full pointer-events-none blur-3xl opacity-20 transition-all duration-700"
+        style={{ backgroundColor: tierConfig.color }}
       />
 
       {/* Top Header Strip */}
       <div className="w-full flex items-center justify-between mb-3 z-10">
-        <span className="text-xs uppercase tracking-wider font-mono text-[#94A3B8] flex items-center gap-1.5">
-          <ShieldAlert className="w-3.5 h-3.5 text-[#5B86E5]" />
-          Real-Time Churn Propensity
+        <span className="text-xs uppercase tracking-wider font-mono flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>
+          <ShieldAlert className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
+          Churn Propensity Signal
         </span>
-        <span className={`px-2.5 py-0.5 text-xs font-mono font-semibold rounded-full uppercase shadow-sm ${badgeClass}`}>
-          {riskTier} Risk
+        <span
+          className="px-2.5 py-1 text-xs font-mono font-semibold rounded-full uppercase flex items-center gap-1.5 shadow-sm"
+          style={{
+            color: tierConfig.color,
+            backgroundColor: tierConfig.bg,
+            border: `1px solid ${tierConfig.border}`
+          }}
+        >
+          <span className="text-sm leading-none" aria-hidden="true">{tierConfig.shape}</span>
+          <TierIcon className="w-3 h-3" />
+          <span>{tierConfig.label}</span>
         </span>
       </div>
 
-      {/* SVG Radial Neon Gauge */}
+      {/* SVG Radial Warm Editorial Gauge */}
       <div className="relative w-72 h-40 flex items-end justify-center my-2 z-10">
         <svg viewBox="0 0 220 125" className="w-full h-full overflow-visible">
           <defs>
-            {/* Gradients */}
-            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#10B981" />
-              <stop offset="35%" stopColor="#E5A93C" />
-              <stop offset="70%" stopColor="#F97316" />
-              <stop offset="100%" stopColor="#EF4444" />
+            <linearGradient id="warmGaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#9B7BD1" />
+              <stop offset="35%" stopColor="#F4B13E" />
+              <stop offset="70%" stopColor="#E4572E" />
+              <stop offset="100%" stopColor="#9E1A36" />
             </linearGradient>
-
-            <filter id="gaugeGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
           </defs>
 
           {/* Background Outer Ring */}
           <path
             d="M 25 110 A 85 85 0 0 1 195 110"
             fill="none"
-            stroke="#161D27"
+            stroke="var(--line)"
             strokeWidth="14"
             strokeLinecap="round"
           />
 
-          {/* Glowing Colored Sectors */}
-          {/* Low Risk Arc */}
+          {/* Glowing Colored Sectors (Orchid -> Saffron -> Persimmon -> Crimson) */}
+          {/* Low Risk Arc (0% - 25%) */}
           <path
             d="M 25 110 A 85 85 0 0 1 50 49.9"
             fill="none"
-            stroke="#10B981"
+            stroke="#9B7BD1"
             strokeWidth="12"
             strokeLinecap="round"
-            className="opacity-80"
+            className="opacity-90"
           />
-          {/* Moderate Risk Arc */}
+          {/* Moderate Risk Arc (25% - 50%) */}
           <path
             d="M 50 49.9 A 85 85 0 0 1 110 25"
             fill="none"
-            stroke="#E5A93C"
+            stroke="#F4B13E"
             strokeWidth="12"
-            className="opacity-80"
+            className="opacity-90"
           />
-          {/* High Risk Arc */}
+          {/* High Risk Arc (50% - 75%) */}
           <path
             d="M 110 25 A 85 85 0 0 1 170 49.9"
             fill="none"
-            stroke="#F97316"
+            stroke="#E4572E"
             strokeWidth="12"
-            className="opacity-80"
+            className="opacity-90"
           />
-          {/* Critical Risk Arc */}
+          {/* Critical Risk Arc (75% - 100%) */}
           <path
             d="M 170 49.9 A 85 85 0 0 1 195 110"
             fill="none"
-            stroke="#EF4444"
+            stroke="#9E1A36"
             strokeWidth="12"
             strokeLinecap="round"
-            className="opacity-80"
+            className="opacity-90"
           />
 
           {/* Scale Markers & Numbers */}
-          <line x1="25" y1="110" x2="15" y2="110" stroke="#64748B" strokeWidth="1.5" />
-          <text x="8" y="113" fill="#94A3B8" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="end">0%</text>
+          <line x1="25" y1="110" x2="15" y2="110" stroke="var(--faint)" strokeWidth="1.5" />
+          <text x="8" y="113" fill="var(--muted)" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="end">0%</text>
 
-          <line x1="110" y1="25" x2="110" y2="15" stroke="#64748B" strokeWidth="1.5" />
-          <text x="110" y="10" fill="#94A3B8" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="middle">50%</text>
+          <line x1="110" y1="25" x2="110" y2="15" stroke="var(--faint)" strokeWidth="1.5" />
+          <text x="110" y="10" fill="var(--muted)" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="middle">50%</text>
 
-          <line x1="195" y1="110" x2="205" y2="110" stroke="#64748B" strokeWidth="1.5" />
-          <text x="210" y="113" fill="#94A3B8" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="start">100%</text>
+          <line x1="195" y1="110" x2="205" y2="110" stroke="var(--faint)" strokeWidth="1.5" />
+          <text x="210" y="113" fill="var(--muted)" fontSize="8" fontFamily="IBM Plex Mono" textAnchor="start">100%</text>
 
           {/* Animated Needle */}
           <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: '110px 110px', transition: 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
@@ -131,44 +165,43 @@ export const RiskGauge: React.FC<RiskGaugeProps> = ({
               y1="110"
               x2="110"
               y2="32"
-              stroke="#F3EFE6"
+              stroke="var(--ink)"
               strokeWidth="3.5"
               strokeLinecap="round"
-              filter="drop-shadow(0 0 6px rgba(243, 239, 230, 0.6))"
             />
             <polygon
               points="105,46 115,46 110,26"
-              fill={riskColor}
+              fill={tierConfig.color}
             />
           </g>
 
-          {/* Pivot Glow */}
-          <circle cx="110" cy="110" r="10" fill="#0D1117" stroke="#F3EFE6" strokeWidth="2.5" />
-          <circle cx="110" cy="110" r="4" fill={riskColor} />
+          {/* Pivot Center */}
+          <circle cx="110" cy="110" r="10" fill="var(--paper-warm)" stroke="var(--ink)" strokeWidth="2" />
+          <circle cx="110" cy="110" r="4" fill={tierConfig.color} />
         </svg>
 
         {/* Big Number Readout with CountUp */}
         <div className="absolute bottom-0 text-center flex flex-col items-center">
-          <div className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[#F3EFE6] flex items-baseline">
+          <div className="font-mono text-3xl sm:text-4xl font-bold tracking-tight flex items-baseline" style={{ color: 'var(--ink)' }}>
             <CountUp value={clampedProb} decimals={1} duration={800} />
-            <span className="text-base font-normal text-[#94A3B8] ml-1">%</span>
+            <span className="text-base font-normal ml-1" style={{ color: 'var(--muted)' }}>%</span>
           </div>
         </div>
       </div>
 
       {/* Outcome Banner */}
-      <div className="w-full mt-4 pt-3 border-t border-[#242E40] flex items-center justify-between text-xs z-10">
-        <span className="text-[#94A3B8] font-mono">Classification Status:</span>
+      <div className="w-full mt-4 pt-3 flex items-center justify-between text-xs z-10" style={{ borderTop: '1px solid var(--line)' }}>
+        <span className="font-mono" style={{ color: 'var(--muted)' }}>Classification Status:</span>
         <div className="flex items-center gap-1.5 font-mono font-semibold">
           {predictedChurn ? (
             <>
-              <AlertCircle className="w-3.5 h-3.5 text-[#F87171]" />
-              <span className="text-[#F87171]">Churn Anticipated</span>
+              <AlertOctagon className="w-3.5 h-3.5" style={{ color: '#E4572E' }} />
+              <span style={{ color: '#E4572E' }}>Churn Anticipated</span>
             </>
           ) : (
             <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-              <span className="text-[#34D399]">Account Retained</span>
+              <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#9B7BD1' }} />
+              <span style={{ color: '#9B7BD1' }}>Account Retained</span>
             </>
           )}
         </div>

@@ -275,19 +275,19 @@ def predict_single(profile: CustomerProfile) -> PredictionResponse:
     prob = float(model.predict_proba(transformed)[0][1]) * 100.0
     prob_rounded = round(prob, 1)
     
-    # Determine risk tier & aesthetic color code
+    # Determine risk tier & aesthetic color code (The Opportune Moment 2026 Warm Palette)
     if prob_rounded < 25.0:
         risk_tier = "Low"
-        risk_color = "#2E7D32" # dark green
+        risk_color = "#9B7BD1" # Orchid
     elif prob_rounded < 50.0:
         risk_tier = "Moderate"
-        risk_color = "#C9A227" # ochre / amber
+        risk_color = "#F4B13E" # Saffron
     elif prob_rounded < 75.0:
         risk_tier = "High"
-        risk_color = "#E65100" # deep orange
+        risk_color = "#E4572E" # Persimmon
     else:
         risk_tier = "Critical"
-        risk_color = "#C62828" # crimson red
+        risk_color = "#9E1A36" # Crimson-Mulberry
         
     # Financial metrics
     # Estimated CLV = Monthly MRR * (estimated remaining lifetime in months based on risk)
@@ -467,16 +467,16 @@ def predict_batch_df(df: pd.DataFrame) -> Dict[str, Any]:
         p = round(float(probs[i]), 1)
         if p < 25.0:
             tier = "Low"
-            color = "#2E7D32"
+            color = "#9B7BD1"
         elif p < 50.0:
             tier = "Moderate"
-            color = "#C9A227"
+            color = "#F4B13E"
         elif p < 75.0:
             tier = "High"
-            color = "#E65100"
+            color = "#E4572E"
         else:
             tier = "Critical"
-            color = "#C62828"
+            color = "#9E1A36"
             
         mrr = float(row["monthly_charges"])
         at_risk = round(mrr * 12 * (p / 100.0), 2)

@@ -176,11 +176,11 @@ export const BatchAnalytics: React.FC = () => {
               </div>
             </div>
 
-            <div className="h-3 w-full bg-[#0D1117] rounded-full flex overflow-hidden">
-              <div style={{ width: `${(result.risk_distribution.Low / result.total_records) * 100}%` }} className="bg-[#10B981] transition-all duration-700" title="Low Risk" />
-              <div style={{ width: `${(result.risk_distribution.Moderate / result.total_records) * 100}%` }} className="bg-[#E5A93C] transition-all duration-700" title="Moderate Risk" />
-              <div style={{ width: `${(result.risk_distribution.High / result.total_records) * 100}%` }} className="bg-[#F97316] transition-all duration-700" title="High Risk" />
-              <div style={{ width: `${(result.risk_distribution.Critical / result.total_records) * 100}%` }} className="bg-[#EF4444] transition-all duration-700" title="Critical Risk" />
+            <div className="h-3 w-full rounded-full flex overflow-hidden" style={{ background: 'var(--line)' }}>
+              <div style={{ width: `${(result.risk_distribution.Low / result.total_records) * 100}%`, backgroundColor: '#9B7BD1' }} className="transition-all duration-700" title="Low Risk" />
+              <div style={{ width: `${(result.risk_distribution.Moderate / result.total_records) * 100}%`, backgroundColor: '#F4B13E' }} className="transition-all duration-700" title="Moderate Risk" />
+              <div style={{ width: `${(result.risk_distribution.High / result.total_records) * 100}%`, backgroundColor: '#E4572E' }} className="transition-all duration-700" title="High Risk" />
+              <div style={{ width: `${(result.risk_distribution.Critical / result.total_records) * 100}%`, backgroundColor: '#9E1A36' }} className="transition-all duration-700" title="Critical Risk" />
             </div>
           </div>
 

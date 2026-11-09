@@ -19,7 +19,7 @@ const PRESETS = [
     name: 'Enterprise Loyal',
     subtitle: 'Stable multi-year tier',
     riskTag: 'Low Risk',
-    riskColor: '#10B981',
+    riskColor: '#9B7BD1',
     icon: ShieldCheck,
     data: {
       customer_id: 'CUST-1092',
@@ -41,7 +41,7 @@ const PRESETS = [
     name: 'Critical Renewal Cliff',
     subtitle: 'High friction & drop-off',
     riskTag: 'Critical Risk',
-    riskColor: '#EF4444',
+    riskColor: '#9E1A36',
     icon: Flame,
     data: {
       customer_id: 'CUST-4819',
@@ -63,7 +63,7 @@ const PRESETS = [
     name: 'Onboarding At-Risk',
     subtitle: 'Early adoption struggle',
     riskTag: 'High Risk',
-    riskColor: '#F97316',
+    riskColor: '#E4572E',
     icon: AlertTriangle,
     data: {
       customer_id: 'CUST-7210',
@@ -85,7 +85,7 @@ const PRESETS = [
     name: 'Mid-Market Regular',
     subtitle: 'Moderate engagement',
     riskTag: 'Moderate Risk',
-    riskColor: '#E5A93C',
+    riskColor: '#F4B13E',
     icon: UserCheck,
     data: {
       customer_id: 'CUST-3311',
