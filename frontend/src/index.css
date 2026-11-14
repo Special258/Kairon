@@ -5144,3 +5144,504 @@ html, body, #root, .product-app, .auth-page, .topbar {
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   TODAY'S FOCUS HERO + FOCUS ACCOUNT CARDS (Priority Queue)
+   ========================================================================== */
+.todays-focus-hero {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.focus-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.focus-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.focus-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.focus-count-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: rgba(16, 138, 101, 0.1);
+  color: var(--teal);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(16, 138, 101, 0.2);
+}
+
+.todays-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.focus-account-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.focus-account-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+
+.focus-account-card.tier-low::before { background: #238b67; }
+.focus-account-card.tier-moderate::before { background: #c78b1a; }
+.focus-account-card.tier-high::before { background: #d76d3c; }
+.focus-account-card.tier-critical::before { background: #c75252; }
+
+.focus-account-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.focus-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.focus-account-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.focus-account-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.focus-account-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.focus-account-id {
+  font-size: 10.5px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.focus-card-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.focus-card-reason p {
+  font-size: 11.5px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.focus-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+}
+
+.focus-card-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.focus-step-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.focus-step-arrow {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--teal);
+}
+
+.focus-card-footer {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .todays-focus-hero {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .focus-account-card {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .focus-account-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .focus-account-avatar {
+  background: rgba(43, 214, 156, 0.12);
+  color: var(--teal);
+}
+
+[data-theme="dark"] .focus-step-box {
+  background: rgba(255,255,255,0.04);
+}
+
+[data-theme="dark"] .focus-badge-pill {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .focus-count-tag {
+  background: rgba(43, 214, 156, 0.1);
+  color: var(--teal);
+}
+
+/* ==========================================================================
+   ONBOARDING STEPS GRID
+   ========================================================================== */
+.onboarding-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.onboarding-step-box {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.onboarding-step-box:hover {
+  transform: translateY(-3px);
+  border-color: var(--teal);
+  box-shadow: 0 6px 20px rgba(16, 138, 101, 0.1);
+}
+
+.onboarding-ws-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  padding: 3px 10px;
+  background: rgba(16, 138, 101, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(16, 138, 101, 0.2);
+}
+
+.step-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: inline-block;
+}
+
+.step-icon-wrap {
+  color: var(--primary);
+  margin: 4px 0;
+}
+
+.onboarding-step-box b {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.onboarding-step-box span {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .onboarding-step-box {
+  background: rgba(255,255,255,0.03);
+}
+
+[data-theme="dark"] .onboarding-step-box:hover {
+  box-shadow: 0 6px 20px rgba(43, 214, 156, 0.15);
+}
+
+/* ==========================================================================
+   AUTH PAGE OVERRIDES (ensure shell works properly)
+   ========================================================================== */
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page.signin-active .auth-master-shell {
+  transform: none;
+}
+
+.auth-page.signup-active .auth-story {
+  order: 2;
+}
+
+.auth-page.signup-active .auth-panel {
+  order: 1;
+}
+
+/* ==========================================================================
+   PROFILE PAGE - MISSING DETAIL STYLES
+   ========================================================================== */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-list > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-list > div:last-child {
+  border-bottom: none;
+}
+
+.detail-list > div > span {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.detail-list > div > b {
+  font-size: 12px;
+  color: var(--ink);
+  text-align: right;
+  word-break: break-all;
+}
+
+[data-theme="dark"] .detail-list > div {
+  border-color: var(--line);
+}
+
+/* ==========================================================================
+   SETTINGS - SECTION HELPER
+   ========================================================================== */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+
+.settings-section + .settings-section {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  margin-top: 4px;
+}
+
+.settings-section h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  margin: 2px 0 4px;
+  color: var(--ink);
+}
+
+.settings-section p {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.exported-key-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.exported-key-preview small {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.exported-key-preview code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--teal);
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   REVIEWS PAGE - NOTES & ENCRYPTED NOTES STYLES
+   ========================================================================== */
+.review-note-encrypted {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.note-lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  background: rgba(16, 138, 101, 0.08);
+  color: var(--teal);
+  border-radius: 20px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE ADDITIONS
+   ========================================================================== */
+@media (max-width: 700px) {
+  .todays-focus-grid {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .focus-card-footer {
+    flex-direction: column;
+  }
+  .focus-card-footer .primary-button,
+  .focus-card-footer .secondary-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   EXTRA UTILITY: COMPACT BUTTON VARIANT
+   ========================================================================== */
+.primary-button.compact-btn,
+.secondary-button.compact-btn {
+  padding: 7px 13px;
+  font-size: 11px;
+  gap: 5px;
+}
+
+/* Text link btn */
+.text-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.text-link-btn:hover { opacity: 0.75; }
+
+/* Auth page - signup story bg shift */
+.auth-story-bg-mesh {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 80% 20%, rgba(16,138,101,0.15) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 40% at 20% 80%, rgba(10,99,72,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
