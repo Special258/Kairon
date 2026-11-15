@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true,
+    host: '127.0.0.1',
     cors: true,
     warmup: {
       clientFiles: ['./src/main.tsx', './src/App.tsx', './src/index.css']
