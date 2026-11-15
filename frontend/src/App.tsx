@@ -34,7 +34,7 @@ export interface UserIdentity {
   workspaceInitial: string;
 }
 
-export function makeUserIdentity(name?: string, email?: string, workspaceName?: string): UserIdentity {
+function makeUserIdentity(name?: string, email?: string, workspaceName?: string): UserIdentity {
   const cleanEmail = email?.trim() || 'lead@workspace.io';
   const customSaved = getStoredCustomUsername();
   const cleanName = name?.trim() || customSaved || parseNameFromEmail(cleanEmail);
@@ -85,20 +85,29 @@ const riskColors: Record<string, string> = { Low: '#238b67', Moderate: '#c78b1a'
 const riskTone = (tier: string) => tier.toLowerCase();
 const formatMoney = (value: number) => `$${Math.round(value).toLocaleString()}`;
 
-function Logo() {
+function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const dim = size === 'lg' ? 44 : size === 'sm' ? 30 : 38;
+  const svgDim = size === 'lg' ? 24 : size === 'sm' ? 16 : 20;
   return (
-    <div className="logo-lockup">
-      <div className="logo-mark">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div className={`logo-lockup logo-${size}`}>
+      <div className="logo-mark" style={{ width: dim, height: dim }}>
+        <svg width={svgDim} height={svgDim} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="kaironGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#ffffff" />
-              <stop offset="1" stopColor="#e0e7ff" />
+            <linearGradient id="kLayerGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#d1fae5" />
+            </linearGradient>
+            <linearGradient id="kLayerGlow" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#34d399" />
+              <stop offset="100%" stopColor="#059669" />
             </linearGradient>
           </defs>
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#kaironGrad)" fillOpacity="0.95" />
-          <path d="M2 17L12 22L22 17" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M2 12L12 17L22 12" stroke="url(#kaironGrad)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Top isometric plane */}
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#kLayerGrad)" />
+          {/* Mid layer accent */}
+          <path d="M2 12L12 17L22 12" stroke="url(#kLayerGrad)" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Bottom layer foundation */}
+          <path d="M2 17L12 22L22 17" stroke="url(#kLayerGrad)" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <div className="logo-text">
@@ -132,255 +141,262 @@ function AuthScreen({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const timeMsg = getAuthScreenTimeMessage();
   const locInfo = getUserLocationAndTime();
+
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t); }, []);
 
   function handleModeChange(targetMode: AuthMode) {
     if (targetMode === mode) return;
     setIsTransitioning(true);
     setMode(targetMode);
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 600);
+    setTimeout(() => setIsTransitioning(false), 700);
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
     const cleanEmail = email.trim();
-    if (!cleanEmail || !password.trim()) {
-      return;
-    }
+    if (!cleanEmail || !password.trim()) return;
     const cleanName = name.trim() || getStoredCustomUsername() || parseNameFromEmail(cleanEmail);
-    if (cleanName) {
-      setStoredCustomUsername(cleanName);
-    }
+    if (cleanName) setStoredCustomUsername(cleanName);
     void onAuth(mode, cleanName, cleanEmail, password, workspaceName.trim());
   }
   function continueWithGoogle() { void onGoogle(); }
 
+  /* Live analytics node data */
+  const nodes = [
+    { label: 'MRR Signal', val: '+4.2%', color: '#12b87a' },
+    { label: 'NPS Score', val: '8.4', color: '#6d58bc' },
+    { label: 'Support Tickets', val: '\u2193 23%', color: '#e05328' },
+    { label: 'Churn Risk', val: 'Low', color: '#12b87a' },
+  ];
+
   return (
-    <main className={`auth-page ${mode === 'signup' ? 'signup-active' : 'signin-active'} ${isTransitioning ? 'mode-morphing' : ''}`}>
-      <div className="auth-master-shell">
-        {/* Sliding Ambient Brand Story Showcase */}
-        <section className="auth-story">
-          <div className="auth-story-bg-mesh" aria-hidden="true" />
-          <div className="auth-story-top">
-            <Logo />
-            <span className="status-pill"><i /> Retention AI live</span>
-          </div>
-          <div className="story-content-slider">
-            <div className={`story-copy ${mode === 'signin' ? 'story-visible' : 'story-hidden'}`}>
-              <span className="eyebrow"><Sparkles size={14} /> Intelligence Made Human</span>
-              <h1>See the signal.<br /><em>Keep the relationship.</em></h1>
-              <p>Kairon continuously analyzes 11 critical health signals to predict account risk before renewal conversations become emergency rescues.</p>
-              <div className="story-steps">
-                <div className="step-card">
-                  <b>01</b>
-                  <span>Signal detection across MRR & tickets</span>
-                </div>
-                <div className="step-card">
-                  <b>02</b>
-                  <span>Explainable ML driver attribution</span>
-                </div>
-                <div className="step-card">
-                  <b>03</b>
-                  <span>Actionable retention playbooks</span>
-                </div>
-              </div>
-            </div>
+    <main className={`auth-page ${mode === 'signup' ? 'signup-active' : 'signin-active'} ${isTransitioning ? 'mode-morphing' : ''} ${mounted ? 'auth-mounted' : ''}`}>
 
-            <div className={`story-copy signup-story ${mode === 'signup' ? 'story-visible' : 'story-hidden'}`}>
-              <span className="eyebrow"><ShieldCheck size={14} /> Zero-Knowledge Security</span>
-              <h1>Protect every<br /><em>key account.</em></h1>
-              <p>Deploy end-to-end encrypted churn intelligence for your entire customer portfolio with client-side Web Crypto safeguards.</p>
-              <div className="story-steps">
-                <div className="step-card">
-                  <b>92.4%</b>
-                  <span>Model ROC-AUC validation score</span>
-                </div>
-                <div className="step-card">
-                  <b>AES-256</b>
-                  <span>Zero-knowledge client reviews</span>
-                </div>
-                <div className="step-card">
-                  <b>-18.6%</b>
-                  <span>Average enterprise churn reduction</span>
-                </div>
-              </div>
-            </div>
+      {/* ══ LEFT — BRAND STORY PANEL ══ */}
+      <section className="auth-story">
+        <div className="auth-bg-layer" aria-hidden="true">
+          <div className="auth-bg-orb orb-1" />
+          <div className="auth-bg-orb orb-2" />
+          <div className="auth-bg-orb orb-3" />
+          <div className="auth-bg-grid" />
+          <svg className="auth-bg-wave" viewBox="0 0 1200 800" preserveAspectRatio="none" fill="none">
+            <path d="M0 400 Q300 280 600 380 T1200 300 L1200 800 L0 800Z" fill="rgba(255,255,255,0.045)" />
+            <path d="M0 500 Q400 380 800 460 T1200 400 L1200 800 L0 800Z" fill="rgba(255,255,255,0.03)" />
+          </svg>
+        </div>
+
+        <div className="auth-story-top">
+          <Logo size="md" />
+          <span className="status-pill"><i className="status-dot-live" /> Retention AI live</span>
+        </div>
+
+        <div className="story-hero-wrap">
+          <div className={`story-hero ${mode === 'signin' ? 'hero-active' : 'hero-exit'}`}>
+            <span className="auth-eyebrow-chip">
+              <Sparkles size={12} />
+              Intelligence Made Human
+            </span>
+            <h1 className="auth-hero-heading">
+              See the signal.<br />
+              <em>Keep the<br />relationship.</em>
+            </h1>
+            <p className="auth-hero-sub">
+              Kairon analyzes 11 critical health signals to predict account risk — before renewal conversations become emergency rescues.
+            </p>
           </div>
 
-          <div className="story-orbit">
-            <div className="orbit-ring ring-one" />
-            <div className="orbit-ring ring-two" />
-            <div className="orbit-core">
-              <Target size={30} />
-              <span>92.4%</span>
-              <small>health confidence</small>
-            </div>
-            <div className="orbit-note note-one"><TrendingDown size={14} /> Churn reduced <b>18.6%</b></div>
-            <div className="orbit-note note-two"><ShieldCheck size={14} /> 847 accounts protected</div>
+          <div className={`story-hero ${mode === 'signup' ? 'hero-active' : 'hero-exit'}`} style={{ position: 'absolute', top: 0 }}>
+            <span className="auth-eyebrow-chip">
+              <ShieldCheck size={12} />
+              Zero-Knowledge Security
+            </span>
+            <h1 className="auth-hero-heading">
+              Protect every<br />
+              <em>key account.</em>
+            </h1>
+            <p className="auth-hero-sub">
+              Deploy end-to-end encrypted churn intelligence with client-side Web Crypto AES-256 safeguards for your entire portfolio.
+            </p>
           </div>
-          <div className="story-footer">
-            <span>Trusted by customer success, rev-ops, and executive retention teams.</span>
+        </div>
+
+        {/* Live analytics widget */}
+        <div className="auth-analytics-widget">
+          <div className="widget-header">
+            <span className="widget-label"><Activity size={12} /> Live Account Health</span>
+            <span className="widget-live-badge">LIVE</span>
           </div>
-        </section>
-
-        {/* Interactive Form Panel */}
-        <section className="auth-panel">
-          <div className="auth-panel-top">
-            <div className="auth-security-tag">
-              <ShieldCheck size={14} />
-              <span>Zero-Knowledge E2EE</span>
-            </div>
-            <div className="auth-status-indicator">
-              <i className="status-live-dot" />
-              <span>System Operational</span>
-            </div>
+          <div className="widget-nodes">
+            {nodes.map((n, i) => (
+              <div className="widget-node" key={n.label} style={{ animationDelay: `${i * 0.14}s` }}>
+                <div className="node-dot" style={{ background: n.color }} />
+                <span className="node-label">{n.label}</span>
+                <span className="node-val" style={{ color: n.color }}>{n.val}</span>
+              </div>
+            ))}
           </div>
+          <div className="widget-chart">
+            {[62, 78, 55, 91, 72, 88, 69, 94, 76, 85, 92, 80].map((h, i) => (
+              <div key={i} className="chart-bar" style={{ height: `${h}%`, animationDelay: `${i * 0.06}s`, background: h > 80 ? '#15c985' : h > 65 ? '#0ea871' : '#0a7a52' }} />
+            ))}
+          </div>
+          <div className="widget-footer">
+            <span><TrendingDown size={11} /> Churn reduced <strong>18.6%</strong></span>
+            <span><ShieldCheck size={11} /> <strong>847</strong> accounts protected</span>
+          </div>
+        </div>
 
-          <div className="auth-panel-inner">
-            <div className="mobile-auth-logo"><Logo /></div>
+        {/* Stats row */}
+        <div className="auth-stat-row">
+          <div className="auth-stat">
+            <span className="stat-num">92.4%</span>
+            <span className="stat-label">Model Accuracy</span>
+          </div>
+          <div className="auth-stat-sep" />
+          <div className="auth-stat">
+            <span className="stat-num">11</span>
+            <span className="stat-label">Health Signals</span>
+          </div>
+          <div className="auth-stat-sep" />
+          <div className="auth-stat">
+            <span className="stat-num">847+</span>
+            <span className="stat-label">Accounts Safe</span>
+          </div>
+        </div>
 
-            <div className="auth-card">
-              <div className="auth-card-top-pill">
-                <span className="auth-pill-badge">
-                  <Sparkles size={13} />
-                  <span>Enterprise Portal</span>
-                </span>
-                <span className="auth-encryption-label">
-                  <LockKeyhole size={11} /> 256-bit AES
-                </span>
-              </div>
+        <div className="story-footer">
+          <span>Trusted by customer success, rev-ops, and executive retention teams worldwide.</span>
+        </div>
+      </section>
 
-              <div className="auth-heading">
-                <span className="eyebrow">{mode === 'signin' ? `${timeMsg.tag} • Real-Time Auth` : 'Start with your customer base'}</span>
-                <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
-                <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the relationships that matter.'}</p>
-              </div>
-              <div className="auth-realtime-loc-banner">
-                <span className="auth-loc-dot" />
-                <ShieldCheck size={13} className="auth-shield-icon" />
-                <span>Location: <strong>{locInfo.city}</strong></span>
-                <span className="auth-loc-sep">•</span>
-                <span>{locInfo.timezoneLong} ({locInfo.timezoneShort})</span>
-                <span className="auth-loc-sep">•</span>
-                <span className="auth-loc-clock">{locInfo.localTimeString}</span>
-              </div>
-              <div className="auth-switch">
-                <button
-                  type="button"
-                  className={mode === 'signin' ? 'active' : ''}
-                  onClick={() => handleModeChange('signin')}
-                >
-                  Sign in
-                </button>
-                <button
-                  type="button"
-                  className={mode === 'signup' ? 'active' : ''}
-                  onClick={() => handleModeChange('signup')}
-                >
-                  Create account
-                </button>
-                <div className={`auth-switch-glider ${mode === 'signup' ? 'to-right' : 'to-left'}`} />
-              </div>
+      {/* ══ RIGHT — AUTH FORM PANEL ══ */}
+      <section className="auth-panel">
+        <div className="auth-panel-top">
+          <div className="auth-security-tag">
+            <ShieldCheck size={13} />
+            <span>Zero-Knowledge E2EE</span>
+          </div>
+          <div className="auth-status-indicator">
+            <i className="status-live-dot" />
+            <span>System Operational</span>
+          </div>
+        </div>
 
-              <form className={`auth-form form-mode-${mode}`} onSubmit={submit}>
-                {mode === 'signup' && (
-                  <div className="form-field-animated enter-signup">
-                    <label>
-                      Full name / Display name
-                      <input
-                        required
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="e.g. Alex Vance"
-                        autoComplete="name"
-                      />
-                    </label>
-                  </div>
-                )}
-                {mode === 'signup' && (
-                  <div className="form-field-animated enter-signup delay-1">
-                    <label>
-                      Workspace / Organization name
-                      <input
-                        value={workspaceName}
-                        onChange={e => setWorkspaceName(e.target.value)}
-                        placeholder="e.g. Acme Corp or Northstar"
-                      />
-                    </label>
-                  </div>
-                )}
-                <div className="form-field-animated">
-                  <label>
-                    Work email
-                    <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" autoComplete="email" />
+        <div className="auth-panel-inner">
+          <div className="mobile-auth-logo"><Logo size="md" /></div>
+
+          <div className="auth-card">
+            <div className="auth-card-top-pill">
+              <span className="auth-pill-badge">
+                <Sparkles size={12} />
+                <span>Enterprise Portal</span>
+              </span>
+              <span className="auth-encryption-label">
+                <LockKeyhole size={11} /> 256-bit AES
+              </span>
+            </div>
+
+            <div className="auth-heading">
+              <span className="eyebrow">
+                {mode === 'signin' ? `${timeMsg.tag} \u2022 Real-Time Auth` : 'Start with your customer base'}
+              </span>
+              <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
+              <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the relationships that matter.'}</p>
+            </div>
+
+            <div className="auth-realtime-loc-banner">
+              <span className="auth-loc-dot" />
+              <ShieldCheck size={12} className="auth-shield-icon" />
+              <span>Location: <strong>{locInfo.city}</strong></span>
+              <span className="auth-loc-sep">\u2022</span>
+              <span className="auth-loc-clock">{locInfo.localTimeString}</span>
+            </div>
+
+            <div className="auth-switch">
+              <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => handleModeChange('signin')}>Sign in</button>
+              <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => handleModeChange('signup')}>Create account</button>
+              <div className={`auth-switch-glider ${mode === 'signup' ? 'to-right' : 'to-left'}`} />
+            </div>
+
+            <form className={`auth-form form-mode-${mode}`} onSubmit={submit}>
+              {mode === 'signup' && (
+                <div className="form-field-animated enter-signup">
+                  <label>Full name / Display name
+                    <input required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Alex Vance" autoComplete="name" />
                   </label>
                 </div>
-                <div className="form-field-animated">
-                  <label>
-                    Password
-                    <div className="input-with-icon">
-                      <input
-                        required
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                      />
-                      <button
-                        type="button"
-                        className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
-                        onClick={() => setShowPassword(prev => !prev)}
-                        title={showPassword ? 'Hide password' : 'Show password'}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? (
-                          <LockKeyholeOpen size={16} className="lock-icon open-anim" />
-                        ) : (
-                          <LockKeyhole size={16} className="lock-icon lock-anim" />
-                        )}
-                      </button>
-                    </div>
+              )}
+              {mode === 'signup' && (
+                <div className="form-field-animated enter-signup delay-1">
+                  <label>Workspace / Organization name
+                    <input value={workspaceName} onChange={e => setWorkspaceName(e.target.value)} placeholder="e.g. Acme Corp or Northstar" />
                   </label>
                 </div>
-                {mode === 'signin' && (
-                  <div className="form-meta form-field-animated">
-                    <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
-                    <button type="button" className="text-button">Forgot password?</button>
+              )}
+              <div className="form-field-animated">
+                <label>Work email
+                  <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" autoComplete="email" />
+                </label>
+              </div>
+              <div className="form-field-animated">
+                <label>Password
+                  <div className="input-with-icon">
+                    <input
+                      required
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    />
+                    <button type="button" className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
+                      onClick={() => setShowPassword(prev => !prev)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                      {showPassword ? <LockKeyholeOpen size={15} className="lock-icon open-anim" /> : <LockKeyhole size={15} className="lock-icon lock-anim" />}
+                    </button>
                   </div>
+                </label>
+              </div>
+              {mode === 'signin' && (
+                <div className="form-meta form-field-animated">
+                  <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
+                  <button type="button" className="text-button">Forgot password?</button>
+                </div>
+              )}
+              <button className="primary-button auth-submit" disabled={loading}>
+                {loading ? (
+                  <><span className="auth-spinner" />Authenticating...</>
+                ) : (
+                  <>{mode === 'signin' ? 'Sign in to workspace' : 'Create workspace account'}<ArrowRight size={16} /></>
                 )}
-                <button className="primary-button auth-submit" disabled={loading}>
-                  {loading ? 'Authenticating...' : mode === 'signin' ? 'Sign in to workspace' : 'Create workspace account'} <ArrowRight size={17} />
-                </button>
-              </form>
-
-              <div className="auth-divider"><span>or continue with</span></div>
-              <button
-                type="button"
-                className="secondary-button sso-button"
-                onClick={continueWithGoogle}
-                disabled={loading}
-              >
-                <span className="google-dot">G</span> {loading ? 'Connecting securely...' : 'Continue with Google'}
               </button>
-              {authError && <p className="auth-error" role="alert">{authError}</p>}
-            </div>
+            </form>
 
-            <p className="auth-legal">By continuing, you agree to our <a>Terms of service</a> and <a>Privacy policy</a>.</p>
+            <div className="auth-divider"><span>or continue with</span></div>
+            <button type="button" className="sso-button" onClick={continueWithGoogle} disabled={loading}>
+              <svg width="17" height="17" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              {loading ? 'Connecting...' : 'Continue with Google'}
+            </button>
+            {authError && <p className="auth-error" role="alert"><AlertTriangle size={13} /> {authError}</p>}
           </div>
 
-          <div className="auth-panel-footer">
-            <span>SOC-2 Type II</span>
-            <span>•</span>
-            <span>HIPAA & GDPR</span>
-            <span>•</span>
-            <span>99.98% SLA</span>
-          </div>
-        </section>
-      </div>
+          <p className="auth-legal">By continuing, you agree to our <a>Terms of service</a> and <a>Privacy policy</a>.</p>
+        </div>
+
+        <div className="auth-panel-footer">
+          <span>SOC-2 Type II</span><span>\u2022</span>
+          <span>HIPAA &amp; GDPR</span><span>\u2022</span>
+          <span>99.98% SLA</span>
+        </div>
+      </section>
     </main>
   );
 }

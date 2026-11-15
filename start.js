@@ -10,7 +10,7 @@ const npmCmd = isWindows ? 'npm.cmd' : 'npm';
 const pythonCmd = 'python';
 
 // Start Python Backend
-const backend = spawn('python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload', {
+const backend = spawn('python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload --reload-dir backend/app', {
   cwd: __dirname,
   shell: true,
   stdio: 'pipe'

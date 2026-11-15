@@ -6,6 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    cors: true,
+    warmup: {
+      clientFiles: ['./src/main.tsx', './src/App.tsx', './src/index.css']
+    },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',
