@@ -179,6 +179,19 @@ def get_metrics():
     _, _, metadata = get_artifacts()
     return metadata
 
+@app.get("/api/model/diagnostics", response_model=ModelMetrics)
+def get_diagnostics():
+    _, _, metadata = get_artifacts()
+    return metadata
+
+@app.get("/api/customers")
+def get_customers(_: dict = Depends(require_user)):
+    return get_all_accounts()
+
+@app.get("/api/reviews")
+def get_reviews():
+    return []
+
 @app.get("/api/dataset/summary")
 def get_summary(_: dict = Depends(require_user)):
     return get_dataset_summary()

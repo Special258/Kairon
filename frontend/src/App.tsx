@@ -164,7 +164,7 @@ function AuthScreen({
     if (targetMode === mode) return;
     setIsTransitioning(true);
     setMode(targetMode);
-    setTimeout(() => setIsTransitioning(false), 750);
+    setTimeout(() => setIsTransitioning(false), 500);
   }
 
   function submit(event: FormEvent) {
@@ -187,7 +187,6 @@ function AuthScreen({
     void onGoogle();
   }
 
-  /* Real-time telemetry signals data */
   const telemetrySignals = [
     { label: 'MRR Expansion', val: '+18.4%', trend: 'up', color: '#10b981' },
     { label: 'NPS Benchmark', val: '9.2 / 10', trend: 'up', color: '#34d399' },
@@ -196,92 +195,48 @@ function AuthScreen({
   ];
 
   return (
-    <main className={`auth-page ${mode === 'signup' ? 'signup-active' : 'signin-active'} ${isTransitioning ? 'mode-morphing' : ''} ${mounted ? 'auth-mounted' : ''}`}>
+    <main className={`auth-page panoramic-mode ${mode === 'signup' ? 'signup-active' : 'signin-active'} ${isTransitioning ? 'mode-morphing' : ''} ${mounted ? 'auth-mounted' : ''}`}>
+      {/* Background ambient mesh */}
+      <div className="auth-ambient-canvas" aria-hidden="true">
+        <div className="ambient-orb orb-1" />
+        <div className="ambient-orb orb-2" />
+        <div className="ambient-orb orb-3" />
+        <div className="ambient-matrix-grid" />
+      </div>
 
-      {/* ═════════════════════════════════════════════════════════
-          LEFT STORY PANEL: Abstract 3D Artwork, Telemetry & Brand
-          ═════════════════════════════════════════════════════════ */}
-      <section className="auth-story">
-        {/* Layered Abstract Ambient Background Art */}
-        <div className="auth-bg-layer" aria-hidden="true">
-          <div className="auth-bg-orb orb-1" />
-          <div className="auth-bg-orb orb-2" />
-          <div className="auth-bg-orb orb-3" />
-          <div className="auth-bg-orb orb-4" />
-          <div className="auth-bg-grid" />
-          <svg className="auth-bg-wave" viewBox="0 0 1200 800" preserveAspectRatio="none" fill="none">
-            <path d="M0 380 Q300 240 600 340 T1200 280 L1200 800 L0 800Z" fill="rgba(255,255,255,0.06)" />
-            <path d="M0 480 Q400 350 800 430 T1200 360 L1200 800 L0 800Z" fill="rgba(255,255,255,0.04)" />
-            <path d="M0 580 Q350 460 700 520 T1200 460 L1200 800 L0 800Z" fill="rgba(255,255,255,0.03)" />
-          </svg>
-        </div>
-
-        {/* Story Top Bar */}
-        <div className="auth-story-top">
-          <Logo size="md" />
-          <div className="status-pill">
+      {/* ═══ 1. LEFT SIDEBAR: Telemetry, 3D Gyroscope & Live Sentinel ═══ */}
+      <aside className="auth-flank flank-left">
+        <div className="flank-inner">
+          <div className="flank-tag">
             <i className="status-dot-live" />
-            <span>Telemetry AI Active</span>
-          </div>
-        </div>
-
-        {/* Dynamic Story Hero Headlines */}
-        <div className="story-hero-wrap">
-          <div className={`story-hero ${mode === 'signin' ? 'hero-active' : 'hero-exit'}`}>
-            <span className="auth-eyebrow-chip">
-              <Sparkles size={13} />
-              AI Relationship Intelligence
-            </span>
-            <h1 className="auth-hero-heading">
-              See the signal.<br />
-              <em>Keep the relationship.</em>
-            </h1>
-            <p className="auth-hero-sub">
-              Kairon continuously maps 11 critical health signals to predict account risk before renewal conversations become emergency rescues.
-            </p>
+            <span>Telemetry AI Stream</span>
           </div>
 
-          <div className={`story-hero ${mode === 'signup' ? 'hero-active' : 'hero-exit'}`} style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-            <span className="auth-eyebrow-chip">
-              <ShieldCheck size={13} />
-              Zero-Knowledge Security
-            </span>
-            <h1 className="auth-hero-heading">
-              Protect every<br />
-              <em>key account.</em>
-            </h1>
-            <p className="auth-hero-sub">
-              Deploy client-side Web Crypto AES-256 safeguards ensuring your team reviews, customer metrics, and revenue notes remain strictly private.
-            </p>
+          <div className="flank-hero-text">
+            <h2>See the signal.</h2>
+            <p>11 critical telemetry vectors monitored continuously to predict renewal churn.</p>
           </div>
-        </div>
 
-        {/* ══ 3D Abstract Geometric Visual Artwork & Real-Time Telemetry ══ */}
-        <div className="auth-visual-showcase">
-          {/* Abstract 3D Concentric Gyroscope / Radar Constellation */}
+          {/* 3D Gyroscope Constellation */}
           <div className="abstract-gyro-constellation">
             <div className="gyro-ring ring-outer" />
             <div className="gyro-ring ring-middle" />
             <div className="gyro-ring ring-inner" />
             <div className="gyro-core-pulse">
-              <div className="core-dot" />
-              <div className="core-ripple" />
               <span className="core-score">94.8%</span>
               <small className="core-label">RETENTION</small>
             </div>
           </div>
 
-          {/* Floating Glassmorphic Telemetry Card 1: Enterprise Account Sentinel */}
-          <div className="floating-metric-card card-top-right">
+          {/* Enterprise Account Sentinel Card */}
+          <div className="flank-glass-card">
             <div className="card-badge-row">
-              <span className="enterprise-badge">
-                <span className="badge-glow-dot" /> Stripe Enterprise
-              </span>
+              <span className="enterprise-badge"><span className="badge-glow-dot" /> Stripe Enterprise</span>
               <span className="health-tag tag-healthy">LOW RISK</span>
             </div>
             <div className="card-mrr-row">
               <span className="mrr-val">$128,000</span>
-              <span className="mrr-pct"><TrendingUp size={12} /> +18.4%</span>
+              <span className="mrr-pct"><TrendingUp size={12} /> +18.4% ARR</span>
             </div>
             <div className="mini-progress-track">
               <div className="mini-progress-fill" style={{ width: '92%' }} />
@@ -289,277 +244,283 @@ function AuthScreen({
             <span className="card-footer-note">Next renewal in 44 days • Sentinel Healthy</span>
           </div>
 
-          {/* Floating Glassmorphic Telemetry Card 2: Proactive AI Signal */}
-          <div className="floating-metric-card card-bottom-left">
+          {/* Real-time Telemetry Grid */}
+          <div className="telemetry-strip-grid">
+            {telemetrySignals.map((item, idx) => (
+              <div key={item.label} className="telemetry-chip" style={{ animationDelay: `${idx * 0.08}s` }}>
+                <span className="chip-label">{item.label}</span>
+                <div className="chip-data-row">
+                  <strong className="chip-val" style={{ color: item.color }}>{item.val}</strong>
+                  {item.trend === 'up' ? <TrendingUp size={11} color={item.color} /> : <TrendingDown size={11} color={item.color} />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      {/* ═══ 2. CENTER STAGE: Centered Authentication Card ═══ */}
+      <section className="auth-stage-center">
+        <div className="auth-card">
+          {/* Brand Logo Lockup */}
+          <div className="auth-card-brand">
+            <Logo size="lg" />
+            <div className="auth-security-tag">
+              <ShieldCheck size={13} />
+              <span>256-Bit AES-GCM Encrypted</span>
+            </div>
+          </div>
+
+          {/* Header Greeting */}
+          <div className="auth-heading">
+            <span className="eyebrow">
+              {mode === 'signin' ? `${timeMsg.tag} • Secure Session` : 'Start with your customer base'}
+            </span>
+            <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
+            <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the enterprise relationships that matter.'}</p>
+          </div>
+
+          {/* Location & Time Banner */}
+          <div className="auth-realtime-loc-banner">
+            <span className="auth-loc-dot" />
+            <MapPin size={12} className="auth-shield-icon" />
+            <span>Location: <strong>{locInfo.city}</strong></span>
+            <span className="auth-loc-sep">•</span>
+            <span className="auth-loc-clock">{locInfo.localTimeString}</span>
+            <span className="auth-loc-sep">•</span>
+            <span className="auth-loc-enc">Verified</span>
+          </div>
+
+          {/* Sliding Mode Switcher */}
+          <div className="auth-switch">
+            <button
+              type="button"
+              className={mode === 'signin' ? 'active' : ''}
+              onClick={() => handleModeChange('signin')}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={mode === 'signup' ? 'active' : ''}
+              onClick={() => handleModeChange('signup')}
+            >
+              Create account
+            </button>
+            <div className={`auth-switch-glider ${mode === 'signup' ? 'to-right' : 'to-left'}`} />
+          </div>
+
+          {/* Form */}
+          <form className={`auth-form form-mode-${mode}`} onSubmit={submit}>
+            {mode === 'signup' && (
+              <div className="form-field-animated enter-signup">
+                <label>
+                  Full name / Display name
+                  <div className="input-with-icon">
+                    <input
+                      required
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="e.g. Alex Vance"
+                      autoComplete="name"
+                    />
+                    <UserRound size={15} className="input-hint-icon" />
+                  </div>
+                </label>
+              </div>
+            )}
+
+            {mode === 'signup' && (
+              <div className="form-field-animated enter-signup delay-1">
+                <label>
+                  Workspace / Organization name
+                  <div className="input-with-icon">
+                    <input
+                      value={workspaceName}
+                      onChange={e => setWorkspaceName(e.target.value)}
+                      placeholder="e.g. Acme Corp or Northstar"
+                    />
+                    <Layers size={15} className="input-hint-icon" />
+                  </div>
+                </label>
+              </div>
+            )}
+
+            <div className="form-field-animated">
+              <label>
+                Work email
+                <div className="input-with-icon">
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    autoComplete="email"
+                  />
+                  <Globe size={15} className="input-hint-icon" />
+                </div>
+              </label>
+            </div>
+
+            <div className="form-field-animated">
+              <label>
+                Password
+                <div className="input-with-icon">
+                  <input
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                  />
+                  <button
+                    type="button"
+                    className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
+                    onClick={() => setShowPassword(prev => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <LockKeyholeOpen size={15} className="lock-icon open-anim" /> : <LockKeyhole size={15} className="lock-icon lock-anim" />}
+                  </button>
+                </div>
+              </label>
+            </div>
+
+            {mode === 'signin' && (
+              <div className="form-meta form-field-animated">
+                <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
+                <button type="button" className="text-button" onClick={() => showToast('Password reset link sent to registered email', 'info')}>
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            {/* Primary Submit */}
+            <button className="primary-button auth-submit" disabled={loading}>
+              {loading ? (
+                <><span className="auth-spinner" /> Authenticating...</>
+              ) : (
+                <>{mode === 'signin' ? 'Sign in to workspace' : 'Create workspace account'} <ArrowRight size={16} className="btn-arrow" /></>
+              )}
+            </button>
+
+            {/* Quick Instant Demo Access */}
+            {mode === 'signin' && (
+              <button
+                type="button"
+                className="quick-demo-btn"
+                onClick={handleQuickDemo}
+                disabled={loading}
+              >
+                <Zap size={14} className="demo-zap-icon" />
+                <span>Instant 1-Click Demo Access</span>
+                <span className="demo-pill">Lead CS</span>
+              </button>
+            )}
+          </form>
+
+          {/* SSO */}
+          <div className="auth-divider"><span>or continue with</span></div>
+          <button
+            type="button"
+            className="sso-button"
+            onClick={continueWithGoogle}
+            disabled={loading}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>Continue with Google Workspace</span>
+          </button>
+
+          {authError && (
+            <p className="auth-error" role="alert">
+              <AlertTriangle size={14} /> {authError}
+            </p>
+          )}
+
+          {/* Footer compliance */}
+          <div className="auth-card-footer">
+            <span>SOC-2 Type II</span>
+            <span>•</span>
+            <span>HIPAA &amp; GDPR Compliant</span>
+            <span>•</span>
+            <span>99.98% SLA</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 3. RIGHT SIDEBAR: AI Retention Playbooks & Model Intelligence ═══ */}
+      <aside className="auth-flank flank-right">
+        <div className="flank-inner">
+          <div className="flank-tag tag-ai">
+            <Sparkles size={12} />
+            <span>Autonomous Intelligence</span>
+          </div>
+
+          <div className="flank-hero-text">
+            <h2>Protect every account.</h2>
+            <p>Predictive drivers identify churn risk 90 days before renewal deadlines.</p>
+          </div>
+
+          {/* Proactive Playbook Card */}
+          <div className="flank-glass-card card-playbook">
             <div className="card-badge-row">
-              <span className="ai-insight-tag"><Zap size={11} /> Proactive Playbook Triggered</span>
+              <span className="ai-insight-tag"><Zap size={11} /> Playbook Triggered</span>
+              <span className="health-tag tag-healthy">AUTOMATED</span>
             </div>
             <p className="ai-insight-text">
-              Usage velocity jumped <strong>+24.6%</strong> following automated executive check-in.
+              Usage momentum jumped <strong>+24.6%</strong> following automated executive check-in.
             </p>
             <div className="sparkline-bar-row">
-              {[45, 52, 48, 68, 74, 82, 91, 96].map((h, i) => (
+              {[38, 46, 42, 60, 68, 76, 88, 96].map((h, i) => (
                 <div key={i} className="sparkline-bar" style={{ height: `${h}%`, animationDelay: `${i * 0.08}s` }} />
               ))}
             </div>
+            <span className="card-footer-note">$148,000 ARR renewal risk averted</span>
           </div>
-        </div>
 
-        {/* Real-time Telemetry Grid Strip */}
-        <div className="telemetry-strip-grid">
-          {telemetrySignals.map((item, idx) => (
-            <div key={item.label} className="telemetry-chip" style={{ animationDelay: `${idx * 0.1}s` }}>
-              <span className="chip-label">{item.label}</span>
-              <div className="chip-data-row">
-                <strong className="chip-val" style={{ color: item.color }}>{item.val}</strong>
-                {item.trend === 'up' ? <TrendingUp size={12} color={item.color} /> : <TrendingDown size={12} color={item.color} />}
+          {/* Model Diagnostics Card */}
+          <div className="flank-glass-card card-diagnostics">
+            <div className="diag-header">
+              <Activity size={13} color="#10b981" />
+              <span>Model Diagnostics</span>
+              <span className="diag-val">v1.0.0</span>
+            </div>
+            <div className="diag-metrics-grid">
+              <div className="diag-metric">
+                <span className="diag-label">ROC-AUC</span>
+                <strong className="diag-num">98.4%</strong>
+              </div>
+              <div className="diag-metric">
+                <span className="diag-label">Accuracy</span>
+                <strong className="diag-num">93.6%</strong>
+              </div>
+              <div className="diag-metric">
+                <span className="diag-label">Latency</span>
+                <strong className="diag-num">&lt; 14ms</strong>
+              </div>
+              <div className="diag-metric">
+                <span className="diag-label">Shielded</span>
+                <strong className="diag-num">847+</strong>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Stats Row */}
-        <div className="auth-stat-row">
-          <div className="auth-stat">
-            <span className="stat-num">98.4%</span>
-            <span className="stat-label">Model ROC-AUC</span>
           </div>
-          <div className="auth-stat-sep" />
-          <div className="auth-stat">
-            <span className="stat-num">11</span>
-            <span className="stat-label">Telemetry Signals</span>
-          </div>
-          <div className="auth-stat-sep" />
-          <div className="auth-stat">
-            <span className="stat-num">847+</span>
-            <span className="stat-label">Accounts Shielded</span>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <div className="story-footer">
-          <span>Trusted by Customer Success, RevOps, and Executive Retention leaders worldwide.</span>
-        </div>
-      </section>
-
-      {/* ═════════════════════════════════════════════════════════
-          RIGHT FORM PANEL: Interactive Authentication Portal
-          ═════════════════════════════════════════════════════════ */}
-      <section className="auth-panel">
-        <div className="auth-panel-top">
-          <div className="auth-security-tag">
-            <ShieldCheck size={13} />
-            <span>Zero-Knowledge 256-Bit E2EE</span>
-          </div>
-          <div className="auth-status-indicator">
-            <i className="status-live-dot" />
-            <span>System Operational</span>
-          </div>
-        </div>
-
-        <div className="auth-panel-inner">
-          <div className="mobile-auth-logo"><Logo size="md" /></div>
-
-          <div className="auth-card">
-            {/* Top Security Pill */}
-            <div className="auth-card-top-pill">
-              <span className="auth-pill-badge">
-                <Sparkles size={12} />
-                <span>Enterprise Portal</span>
-              </span>
-              <span className="auth-encryption-label">
-                <LockKeyhole size={11} /> AES-GCM Client Crypto
-              </span>
+          {/* Zero-Knowledge Security Trust Shield */}
+          <div className="flank-trust-box">
+            <ShieldCheck size={18} color="#10b981" />
+            <div>
+              <strong>Client-Side Cryptography</strong>
+              <small>Reviews and notes encrypted with AES-256 Web Crypto before cloud sync.</small>
             </div>
-
-            {/* Header Greeting */}
-            <div className="auth-heading">
-              <span className="eyebrow">
-                {mode === 'signin' ? `${timeMsg.tag} • Secure Session` : 'Start with your customer base'}
-              </span>
-              <h2>{mode === 'signin' ? timeMsg.heading : 'Create your workspace'}</h2>
-              <p>{mode === 'signin' ? timeMsg.sub : 'A clearer way to protect the enterprise relationships that matter.'}</p>
-            </div>
-
-            {/* Geolocation & Time Banner */}
-            <div className="auth-realtime-loc-banner">
-              <span className="auth-loc-dot" />
-              <MapPin size={12} className="auth-shield-icon" />
-              <span>Location: <strong>{locInfo.city}</strong></span>
-              <span className="auth-loc-sep">•</span>
-              <span className="auth-loc-clock">{locInfo.localTimeString}</span>
-              <span className="auth-loc-sep">•</span>
-              <span className="auth-loc-enc">Encrypted</span>
-            </div>
-
-            {/* Mode Switch Glider */}
-            <div className="auth-switch">
-              <button
-                type="button"
-                className={mode === 'signin' ? 'active' : ''}
-                onClick={() => handleModeChange('signin')}
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                className={mode === 'signup' ? 'active' : ''}
-                onClick={() => handleModeChange('signup')}
-              >
-                Create account
-              </button>
-              <div className={`auth-switch-glider ${mode === 'signup' ? 'to-right' : 'to-left'}`} />
-            </div>
-
-            {/* Authentication Form */}
-            <form className={`auth-form form-mode-${mode}`} onSubmit={submit}>
-              {mode === 'signup' && (
-                <div className="form-field-animated enter-signup">
-                  <label>
-                    Full name / Display name
-                    <div className="input-with-icon">
-                      <input
-                        required
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="e.g. Alex Vance"
-                        autoComplete="name"
-                      />
-                      <UserRound size={15} className="input-hint-icon" />
-                    </div>
-                  </label>
-                </div>
-              )}
-
-              {mode === 'signup' && (
-                <div className="form-field-animated enter-signup delay-1">
-                  <label>
-                    Workspace / Organization name
-                    <div className="input-with-icon">
-                      <input
-                        value={workspaceName}
-                        onChange={e => setWorkspaceName(e.target.value)}
-                        placeholder="e.g. Acme Corp or Northstar"
-                      />
-                      <Layers size={15} className="input-hint-icon" />
-                    </div>
-                  </label>
-                </div>
-              )}
-
-              <div className="form-field-animated">
-                <label>
-                  Work email
-                  <div className="input-with-icon">
-                    <input
-                      required
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="name@company.com"
-                      autoComplete="email"
-                    />
-                    <Globe size={15} className="input-hint-icon" />
-                  </div>
-                </label>
-              </div>
-
-              <div className="form-field-animated">
-                <label>
-                  Password
-                  <div className="input-with-icon">
-                    <input
-                      required
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                    />
-                    <button
-                      type="button"
-                      className={`password-toggle-btn ${showPassword ? 'is-unlocked' : 'is-locked'}`}
-                      onClick={() => setShowPassword(prev => !prev)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <LockKeyholeOpen size={15} className="lock-icon open-anim" /> : <LockKeyhole size={15} className="lock-icon lock-anim" />}
-                    </button>
-                  </div>
-                </label>
-              </div>
-
-              {mode === 'signin' && (
-                <div className="form-meta form-field-animated">
-                  <label className="check-label"><input type="checkbox" defaultChecked /> Remember me</label>
-                  <button type="button" className="text-button" onClick={() => showToast('Password reset link sent to registered email', 'info')}>
-                    Forgot password?
-                  </button>
-                </div>
-              )}
-
-              {/* Primary Submit Button */}
-              <button className="primary-button auth-submit" disabled={loading}>
-                {loading ? (
-                  <><span className="auth-spinner" /> Authenticating...</>
-                ) : (
-                  <>{mode === 'signin' ? 'Sign in to workspace' : 'Create workspace account'} <ArrowRight size={16} className="btn-arrow" /></>
-                )}
-              </button>
-
-              {/* Quick Instant Demo Access Button */}
-              {mode === 'signin' && (
-                <button
-                  type="button"
-                  className="quick-demo-btn"
-                  onClick={handleQuickDemo}
-                  disabled={loading}
-                >
-                  <Zap size={14} className="demo-zap-icon" />
-                  <span>Instant 1-Click Demo Access</span>
-                  <span className="demo-pill">Lead CS</span>
-                </button>
-              )}
-            </form>
-
-            {/* Divider */}
-            <div className="auth-divider"><span>or continue with</span></div>
-
-            {/* Google SSO Button */}
-            <button
-              type="button"
-              className="sso-button"
-              onClick={continueWithGoogle}
-              disabled={loading}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <span>{loading ? 'Connecting securely...' : 'Continue with Google Workspace'}</span>
-            </button>
-
-            {authError && (
-              <p className="auth-error" role="alert">
-                <AlertTriangle size={14} /> {authError}
-              </p>
-            )}
           </div>
-
-          <p className="auth-legal">
-            By continuing, you agree to our <a>Terms of Service</a> and <a>Privacy Policy</a>.
-          </p>
         </div>
-
-        <div className="auth-panel-footer">
-          <span>SOC-2 Type II Certified</span>
-          <span>•</span>
-          <span>HIPAA &amp; GDPR Compliant</span>
-          <span>•</span>
-          <span>99.98% SLA Guaranteed</span>
-        </div>
-      </section>
+      </aside>
     </main>
   );
 }
