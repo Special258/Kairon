@@ -103,7 +103,7 @@ input::placeholder, textarea::placeholder { color: var(--faint); }
 .live-label i, .status-pill i, .engine-status i { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; flex-shrink: 0; }
 
 /* Auth */
-.auth-page { display: grid; grid-template-columns: minmax(400px, 1fr) minmax(460px, 1.1fr); min-height: 100vh; overflow: hidden; }
+.auth-page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; overflow: hidden; position: relative; }
 .auth-story {
   position: relative; overflow: hidden; display: flex; flex-direction: column;
   justify-content: space-between; min-height: 100vh; padding: 36px 6vw 32px;
@@ -5128,7 +5128,7 @@ html, body, #root, .product-app, .auth-page, .topbar {
 /* In signup mode, smoothly flip layout columns with sliding motion */
 .signup-active .auth-story {
   transform: translateX(100%);
-  background: linear-gradient(145deg, #182821 0%, #0d1e17 60%, #091712 100%);
+  background: linear-gradient(145deg, #064e3b 0%, #065f46 35%, #059669 65%, #10b981 100%);
 }
 
 .signup-active .auth-panel {
@@ -5469,11 +5469,11 @@ html, body, #root, .product-app, .auth-page, .topbar {
 }
 
 .auth-page.signup-active .auth-story {
-  order: 2;
+  /* Sliding handled smoothly by translateX */
 }
 
 .auth-page.signup-active .auth-panel {
-  order: 1;
+  /* Sliding handled smoothly by translateX */
 }
 
 /* ==========================================================================
