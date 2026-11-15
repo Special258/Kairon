@@ -6574,3 +6574,837 @@ html, body, #root, .product-app, .auth-page, .topbar {
     display: none !important;
   }
 }
+
+
+/* ==========================================================================
+   EDITORIAL APPLIED AI COMMAND CENTER (JAL PATEL REFERENCE STYLE)
+   ========================================================================== */
+
+.editorial-auth-viewport {
+  background-color: #f3efe6 !important;
+  color: #111e19 !important;
+  min-height: 100vh !important;
+  width: 100vw !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 16px 28px 28px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  position: relative !important;
+  overflow-x: hidden !important;
+}
+
+[data-theme='dark'] .editorial-auth-viewport {
+  background-color: #070e0b !important;
+  color: #e2ede8 !important;
+}
+
+/* ── 1. Top Navigation Bar ── */
+.editorial-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 18px 12px;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.editorial-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.brand-monogram {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #111e19;
+  color: #bef264;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 15px;
+  border: 1px solid rgba(190, 242, 100, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.brand-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111e19;
+  letter-spacing: -0.01em;
+}
+
+[data-theme='dark'] .brand-title {
+  color: #ffffff;
+}
+
+.brand-dot {
+  color: #10b981;
+}
+
+.editorial-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.editorial-nav-links .nav-item {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5c6c64;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.editorial-nav-links .nav-item:hover,
+.editorial-nav-links .nav-item.active {
+  color: #111e19;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .editorial-nav-links .nav-item {
+  color: #8c9e95;
+}
+
+[data-theme='dark'] .editorial-nav-links .nav-item:hover,
+[data-theme='dark'] .editorial-nav-links .nav-item.active {
+  color: #bef264;
+}
+
+.editorial-action-pill {
+  background: #111e19;
+  color: #ffffff;
+  border-radius: 99px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(17, 30, 25, 0.15);
+}
+
+.editorial-action-pill:hover {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(17, 30, 25, 0.25);
+}
+
+[data-theme='dark'] .editorial-action-pill {
+  background: #bef264;
+  color: #0d1a14;
+}
+
+[data-theme='dark'] .editorial-action-pill:hover {
+  background: #d9f99d;
+}
+
+.pill-arrow {
+  font-size: 13px;
+}
+
+/* ── 2. Main Framed Stage with Rails ── */
+.editorial-stage-frame {
+  display: grid;
+  grid-template-columns: 72px 1fr 130px;
+  gap: 20px;
+  align-items: stretch;
+  flex: 1;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+/* Left Index Rail */
+.editorial-rail-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  color: #7b8b83;
+  font-family: 'IBM Plex Mono', monospace;
+  user-select: none;
+}
+
+.rail-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: #7b8b83;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.rail-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rail-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9.5px;
+  color: #94a39b;
+}
+
+.rail-step .step-pip {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #cbd5d0;
+  transition: all 0.2s ease;
+}
+
+.rail-step.active {
+  color: #111e19;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .rail-step.active {
+  color: #bef264;
+}
+
+.rail-step.active .step-pip {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.rail-scroll-tag {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 8.5px;
+  letter-spacing: 0.15em;
+  color: #8c9c94;
+  white-space: nowrap;
+}
+
+/* Right Section Tracker Rail */
+.editorial-rail-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 24px 0 24px 12px;
+  gap: 14px;
+  user-select: none;
+}
+
+.rail-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #7b8b83;
+  letter-spacing: 0.08em;
+}
+
+.rail-section-counter {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111e19;
+  line-height: 1;
+}
+
+[data-theme='dark'] .rail-section-counter {
+  color: #ffffff;
+}
+
+.counter-sep {
+  color: #8c9c94;
+  font-size: 18px;
+  margin: 0 3px;
+}
+
+.counter-tot {
+  color: #8c9c94;
+  font-size: 16px;
+}
+
+.rail-waveform {
+  width: 50px;
+  height: 20px;
+}
+
+.rail-wave-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rail-section-meta strong {
+  font-family: 'Fraunces', serif;
+  font-size: 13.5px;
+  color: #111e19;
+  display: block;
+}
+
+[data-theme='dark'] .rail-section-meta strong {
+  color: #ffffff;
+}
+
+.rail-section-meta p {
+  font-size: 11px;
+  color: #7b8b83;
+  margin: 4px 0 0 0;
+  line-height: 1.35;
+}
+
+/* ── 3. Main Center Cockpit Hero Container ── */
+.editorial-cockpit-hero {
+  background: #0d1714;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 28px 70px rgba(10, 20, 16, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 720px;
+}
+
+/* Generative Spline Ribbon Art Background */
+.cockpit-wave-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.ambient-wave-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.95;
+}
+
+.ribbon-path-1 {
+  filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.4));
+}
+
+.ribbon-path-dashed {
+  filter: drop-shadow(0 0 8px rgba(190, 242, 100, 0.35));
+}
+
+.node-glow {
+  filter: drop-shadow(0 0 8px #10b981);
+}
+
+.blueprint-grid-mesh {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.9) 0%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.9) 0%, transparent 85%);
+}
+
+/* Cockpit 2-Column Content Grid */
+.cockpit-content-grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 1.15fr) minmax(360px, 0.95fr);
+  gap: 36px;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+}
+
+/* Left Narrative Column */
+.cockpit-story-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.micro-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.micro-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #bef264;
+  margin-bottom: 22px;
+}
+
+.status-kicker-dot {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: livePulse 2s infinite ease-in-out;
+}
+
+.editorial-main-headline {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(38px, 4vw, 56px);
+  font-weight: 700;
+  line-height: 1.08;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px 0;
+}
+
+.editorial-lead-sub {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(17px, 1.7vw, 22px);
+  font-style: italic;
+  font-weight: 400;
+  color: #c4b5fd;
+  margin: 0 0 16px 0;
+  line-height: 1.35;
+}
+
+.editorial-lead-body {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 0 28px 0;
+}
+
+/* Action CTA Group */
+.cockpit-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.cockpit-primary-pill {
+  background: #bef264;
+  color: #0e1a12;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 12px 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(190, 242, 100, 0.25);
+}
+
+.cockpit-primary-pill:hover {
+  background: #d9f99d;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(190, 242, 100, 0.35);
+}
+
+.btn-down-arrow {
+  font-size: 14px;
+}
+
+.cockpit-ghost-link {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  opacity: 0.82;
+  transition: opacity 0.15s ease;
+}
+
+.cockpit-ghost-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Cockpit Micro Footnotes */
+.cockpit-footer-footnotes {
+  margin-top: 42px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footnote-prefix {
+  margin-bottom: 6px;
+}
+
+.footnote-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footnote-pills span {
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.footnote-pills span:hover {
+  color: #bef264;
+}
+
+/* ── 4. Right Field Note Terminal Card ── */
+.cockpit-terminal-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.fieldnote-terminal-card {
+  background: rgba(18, 28, 24, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 22px 24px 18px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  width: 100%;
+  max-width: 410px;
+}
+
+.fieldnote-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+}
+
+.fieldnote-tag {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.fieldnote-status {
+  color: #bef264;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pulse-tiny-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #bef264;
+  box-shadow: 0 0 6px #bef264;
+}
+
+.fieldnote-quote {
+  font-family: 'Fraunces', serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+
+.quote-italic {
+  font-style: italic;
+  color: #bef264;
+}
+
+/* Mode Toggle */
+.fieldnote-mode-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  padding: 3px;
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.toggle-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+
+.toggle-tab.is-active {
+  color: #0e1a12;
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: calc(50% - 3px);
+  background: #bef264;
+  border-radius: 99px;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-indicator.to-signin {
+  transform: translateX(0);
+}
+
+.tab-indicator.to-signup {
+  transform: translateX(100%);
+}
+
+/* Form Inputs */
+.fieldnote-auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldnote-input-row {
+  margin-bottom: 10px;
+}
+
+.field-label-text {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 4px;
+}
+
+.field-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input-box input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 7px 32px 7px 11px;
+  color: #ffffff;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.field-input-box input:focus {
+  border-color: #bef264;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.field-icon {
+  position: absolute;
+  right: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.field-password-toggle {
+  position: absolute;
+  right: 7px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.fieldnote-error-callout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #fca5a5;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+.fieldnote-submit-btn {
+  width: 100%;
+  background: #bef264;
+  color: #0e1a12;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 9px 14px;
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+}
+
+.fieldnote-submit-btn:hover {
+  background: #d9f99d;
+  box-shadow: 0 4px 14px rgba(190, 242, 100, 0.3);
+}
+
+.fieldnote-google-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  padding: 7px 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 8px;
+  transition: background 0.2s ease;
+}
+
+.fieldnote-google-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Schematic Diagram Box */
+.fieldnote-schematic-box {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schematic-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 2px;
+}
+
+.schematic-chart-svg {
+  width: 100%;
+  height: 44px;
+  display: block;
+}
+
+.schematic-footer-flow {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Floating Corner Callout Badge */
+.fieldnote-corner-badge {
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  background: #182420;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  z-index: 5;
+}
+
+.badge-q-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-text strong {
+  font-size: 9px;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.badge-text span {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.1;
+}
+
+/* ── Responsive Viewports ── */
+@media (max-width: 1240px) {
+  .editorial-stage-frame {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .editorial-rail-left,
+  .editorial-rail-right {
+    display: none;
+  }
+  .editorial-cockpit-hero {
+    padding: 36px 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .cockpit-content-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .fieldnote-terminal-card {
+    max-width: 100%;
+    margin-left: 0;
+  }
+  .editorial-topbar .editorial-nav-links {
+    display: none;
+  }
+  .editorial-auth-viewport {
+    padding: 12px 14px 20px !important;
+  }
+  .editorial-cockpit-hero {
+    padding: 28px 20px;
+  }
+}
